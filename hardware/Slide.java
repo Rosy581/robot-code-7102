@@ -35,9 +35,8 @@ public class Slide {
     }
     public void moveTo(int pos){
         slide.setTargetPosition(pos);
-        int power = pos>slide.getCurrentPosition()?1:-1;
         slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        slide.setPower(power);
+        slide.setPower(1);
                 while(opmode.opModeIsActive() && slide.isBusy()){
 
         }
