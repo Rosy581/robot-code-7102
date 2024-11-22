@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import org.firstinspires.ftc.teamcode.hardware.Slide;
 
 @Autonomous(name = "ClipThatTHANG", group = "Robot")
 
@@ -22,6 +23,7 @@ public class ClipAuton extends LinearOpMode {
     private DcMotor backRightMotor;
     private CRServo claw;
     private DcMotor slide;
+    private Slide slIde;
 
 
     static final double COUNTS_PER_MOTOR_REV = 1440; // eg: TETRIX Motor Encoder
@@ -41,6 +43,7 @@ public class ClipAuton extends LinearOpMode {
         claw = hardwareMap.crservo.get("claw");
         slide = hardwareMap.dcMotor.get("slide");
         imu = hardwareMap.get(IMU.class, "imu");
+        slIde = new Slide(slide,this);
 
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -82,23 +85,16 @@ public class ClipAuton extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        slide.setPower(1);
         claw.setPower(-0.25);//grip the specimen
-        
-        Thread.sleep(5250); 
-        
-        slide.setPower(0);//stop going up
+        slIde.moveTo(7250);
         encoderDrive(0.35,24,24,2.0); //find sub
-        encoderDrive(DRIVE_SPEED,-1,-1,1.0);// line that bitch up
-        slide.setPower(-1);// goes down
-        
-        Thread.sleep(1100); //wait to go down
-        
-        slide.setPower(0); // turns off 
+        encoderDrive(DRIVE_SPEED,-0.5,-0.5,1.0);// line that bitch up
+        slIde.moveTo(6250);
         claw.setPower(1); //open claw 
         encoderDrive(024,-2.3,-2.3,1.0); // back away to realease
+        slIde.moveTo(0);
         encoderDrive(0.35,-12,-12,3.0);
-        //encoderDrive(0.5,-5,5,0.0); 
+        encoderDrive(0.5,-5,5,0.0); 
         moveRight(1,24);
         telemetry.addData("Path", "Complete");
         telemetry.update();
@@ -187,10 +183,6 @@ public class ClipAuton extends LinearOpMode {
         frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    public void rotate(double speed, double degrees){
-        double target;
     }
     
     public void encoderDrive(double speed,

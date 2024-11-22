@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import org.firstinspires.ftc.teamcode.hardware.Slide;
 
 @Autonomous(name = "Clip 2 Of That THANGS", group = "Robot")
 
@@ -22,7 +23,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
     private DcMotor backRightMotor;
     private CRServo claw;
     private DcMotor slide;
-
+    private Slide sLide;
 
     static final double COUNTS_PER_MOTOR_REV = 1440; // eg: TETRIX Motor Encoder
     static final double DRIVE_GEAR_REDUCTION = 1.0; // No External Gearing.
@@ -41,6 +42,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
         claw = hardwareMap.crservo.get("claw");
         slide = hardwareMap.dcMotor.get("slide");
         imu = hardwareMap.get(IMU.class, "imu");
+        //sLide = new Slide(slide);
 
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -54,7 +56,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
         backLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+ 
         backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
