@@ -84,30 +84,18 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        // Skibidi Toilet in Ohio With the Rizzler
-        slide.setPower(1);
-        claw.setPower(-0.25);//grip the specimen
-        
-        Thread.sleep(5450);
-        
-        slide.setPower(0);//stop going up
-        encoderDrive(0.35,24,24,2.0); //find sub
-        encoderDrive(DRIVE_SPEED,-1,-1,1.0);// line that bitch up
-        slide.setPower(-1);// goes down
-        
-        Thread.sleep(1000); //wait to go down
-        
-        slide.setPower(0); // turns off 
-        claw.setPower(1); //open claw 
-        encoderDrive(024,-2.3,-2.3,1.0); // back away to realease
-        rotate(0.35,imu,180.0,true);
-        encoderDrive(0.35,12,12,3.0);
-        moveRight(1,24);
-        
-    
+        claw.setPower(-0.25);
+        slIde.moveTo(7250);
+        encoderDrive(0.35,24,24,2.0);
+        encoderDrive(DRIVE_SPEED,-0.5,-0.5,1.0);
+        slIde.moveTo(6250);
+        claw.setPower(1);
+        encoderDrive(0.25,-2.3,-2.3,1.0); 
+        slIde.moveTo(0);
+        //WORK IN PROGRESS STOPS AFTER CLIPPING FIRST ONE
         telemetry.addData("Path", "Complete");
         telemetry.update();
-        sleep(1250); // pause to display final telemetbry message.
+        sleep(1250); 
     }
 
     public void moveRight(double speed, double dist) {

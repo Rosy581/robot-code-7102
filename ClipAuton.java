@@ -85,20 +85,20 @@ public class ClipAuton extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        claw.setPower(-0.25);//grip the specimen
+        claw.setPower(-0.25);
         slIde.moveTo(7250);
-        encoderDrive(0.35,24,24,2.0); //find sub
-        encoderDrive(DRIVE_SPEED,-0.5,-0.5,1.0);// line that bitch up
+        encoderDrive(0.35,24,24,2.0);
+        encoderDrive(DRIVE_SPEED,-0.5,-0.5,1.0);
         slIde.moveTo(6250);
-        claw.setPower(1); //open claw 
-        encoderDrive(024,-2.3,-2.3,1.0); // back away to realease
+        claw.setPower(1);
+        encoderDrive(0.25,-2.3,-2.3,1.0); 
         slIde.moveTo(0);
         encoderDrive(0.35,-12,-12,3.0);
         encoderDrive(0.5,-5,5,0.0); 
         moveRight(1,24);
         telemetry.addData("Path", "Complete");
         telemetry.update();
-        sleep(1250); // pause to display final telemetbry message.
+        sleep(1250); 
     }
 
     public void moveRight(double speed, double dist) {
