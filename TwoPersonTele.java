@@ -73,12 +73,12 @@ public class TwoPersonTele extends LinearOpMode {
                 rateLimit.reset();
             }
 
-            if((gp2.rb && gp2.lb) || (up2 && down2)){
+            if((gp2.rb && gp2.lb) || (gp2.up && gp2.down)){
                 slide.setPower(0);
-            } else if((up2 || rB2) && slide.getCurrentPosition() < 10000){
-                slide.setPower(1*slowModeMod*2);
-            } else if(down2  || lB2 && !(slide.getCurrentPosition()<=50)){
-                slide.setPower(-1*slowModeMod*2);
+            } else if((gp2.up || gp2.rB) && slide.getCurrentPosition() < 10000){
+                slide.setPower(slowModeMod*2);
+            } else if(gp2.down2  || lB2 && !(slide.getCurrentPosition()<=50)){
+                slide.setPower(-slowModeMod*2);
             } else {                                                             
                 slide.setPower(0);
             };

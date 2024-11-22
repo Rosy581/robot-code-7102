@@ -24,7 +24,7 @@ public class Slide {
     }
     
     public void moveToTop(){
-        slide.setTargetPosition(10000);
+        slide.setTargetPosition(10_000);
         slide.setPower(1);
         slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         while(opmode.opModeIsActive() && slide.isBusy()){
@@ -42,5 +42,9 @@ public class Slide {
         }
         slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slide.setPower(0);
+    }
+    public void testTo(int pos){
+        slide.setTargetPosition(pos);
+        slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 }

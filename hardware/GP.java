@@ -53,7 +53,7 @@ public class GP {
     public float right_stick_x(){
         return gamepad.right_stick_x;
     }
-    public float left_stick_y(){
+    public float right_stick_y(){
         return gamepad.left_stick_y;
     }
     
