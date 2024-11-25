@@ -11,8 +11,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.teamcode.hardware.Slide;
+import org.firstinspires.ftc.teamcode.hardware.Drive;
+import org.firstinspires.ftc.robotcore.internal.system.Deadline;
+import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Clip 2 Of That THANGS", group = "Robot")
+@Autonomous(name = "Clip Two Of Those THANGS", group = "Robot")
 
 public class ClipTwoOfThatTHANGS extends LinearOpMode {
     private IMU imu;
@@ -23,13 +26,10 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
     private DcMotor backRightMotor;
     private CRServo claw;
     private DcMotor slide;
-    private Slide sLide;
-
-    static final double COUNTS_PER_MOTOR_REV = 1440; // eg: TETRIX Motor Encoder
-    static final double DRIVE_GEAR_REDUCTION = 1.0; // No External Gearing.
-    static final double WHEEL_DIAMETER_INCHES = 3.77953; // For figuring circumference
-    static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-            (WHEEL_DIAMETER_INCHES * 3.1415);
+    private Slide slIde;
+    private Drive robot;
+    Deadline rateLimit = new Deadline(250, TimeUnit.MILLISECONDS);
+    
     static final double DRIVE_SPEED = 0.5;
     static final double TURN_SPEED = 0.5;
 
@@ -42,7 +42,8 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
         claw = hardwareMap.crservo.get("claw");
         slide = hardwareMap.dcMotor.get("slide");
         imu = hardwareMap.get(IMU.class, "imu");
-        //sLide = new Slide(slide);
+        slIde = new Slide(slide, this);
+        robot = new Drive(backLeftMotor, frontLeftMotor, backRightMotor, frontRightMotor, this);
 
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -56,7 +57,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
         backLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
- 
+
         backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -65,7 +66,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
         slide.setDirection(DcMotorSimple.Direction.REVERSE);
         slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        
+
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
@@ -82,196 +83,59 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                 backRightMotor.getCurrentPosition(),
                 frontRightMotor.getCurrentPosition());
         telemetry.update();
-
+        String state = "Begin";
         waitForStart();
-        claw.setPower(-0.25);
-        slIde.moveTo(7250);
-        encoderDrive(0.35,24,24,2.0);
-        encoderDrive(DRIVE_SPEED,-0.5,-0.5,1.0);
-        slIde.moveTo(6250);
-        claw.setPower(1);
-        encoderDrive(0.25,-2.3,-2.3,1.0); 
-        slIde.moveTo(0);
-        //WORK IN PROGRESS STOPS AFTER CLIPPING FIRST ONE
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
-        sleep(1250); 
-    }
+        while (opModeIsActive() && state != "finished") {
+            switch(state){
+                case "Begin":
+                    claw.setPower(-0.25);
+                    slide.setTargetPosition(7250);
+                    slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    slide.setPower(1); 
+                    state = "step I";
+                    
+                    break;
+                case "step I":
+                    robot.encoderDrive(0.15, 12.0, 12.0);
+                    
+                    state = "step II";
+                    telemetry.addData("HERE","I AM");
+                    break;
+                case "step II":
+                    if(!slide.isBusy()){
+                        state = "step III";
+                        robot.encoderDrive(0.5, -1.0,-1.0);
+                    }
+                    break;
+                case "step III":
+                    slide.setTargetPosition(6250);
+                    state = "step IV";
+                    rateLimit.reset();
+                    break;
+                case "step IV":
+                    if(!slide.isBusy() && rateLimit.hasExpired()){
+                        state = "step V";
+                    }
+                    break;
+                case "step V":
+                    claw.setPower(1);
+                    robot.encoderDrive(1,-2.0,-2.0);
+                    state = "step VI";
+                    break;
+                }
+                telemetry.addData("State", state);
+            /*claw.setPower(1);
+            robot.encoderDrive(DRIVE_SPEED, -2.3, -2.3);
+            slIde.moveTo(0);
+            robot.encoderDrive(DRIVE_SPEED/2, -12, -12);
+            robot.encoderDrive(DRIVE_SPEED, -5.0, 5.0);
+            robot.moveRight(1, 24);
+            */
+            //telemetry.addData("Path", "Complete");
 
-    public void moveRight(double speed, double dist) {
-
-        int newFrontLeftTarget = frontLeftMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH);
-        int newFrontRightTarget = frontRightMotor.getCurrentPosition() + (int) (dist * COUNTS_PER_INCH);
-        int newBackLeftTarget = backLeftMotor.getCurrentPosition() + (int) (dist * COUNTS_PER_INCH);
-        int newBackRightTarget = backRightMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH);
-
-        frontLeftMotor.setTargetPosition(newFrontLeftTarget);
-        frontRightMotor.setTargetPosition(newFrontRightTarget);
-        backLeftMotor.setTargetPosition(newBackLeftTarget);
-        backRightMotor.setTargetPosition(newBackRightTarget);
-
-        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        runtime.reset();
-        frontLeftMotor.setPower(Math.abs(speed));
-        frontRightMotor.setPower(Math.abs(speed));
-        backLeftMotor.setPower(Math.abs(speed));
-        backRightMotor.setPower(Math.abs(speed));
-
-        while (opModeIsActive() &&
-                (frontLeftMotor.isBusy() &&
-                        frontRightMotor.isBusy() &&
-                        backLeftMotor.isBusy() &&
-                        backRightMotor.isBusy())) {
-
-        }
-
-        frontLeftMotor.setPower(0);
-        frontRightMotor.setPower(0);
-        backLeftMotor.setPower(0);
-        backRightMotor.setPower(0);
-
-        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    public void moveLeft(double speed, double dist) {
-
-        int newFrontLeftTarget = frontLeftMotor.getCurrentPosition() + (int) (dist * COUNTS_PER_INCH);
-        int newFrontRightTarget = frontRightMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH);
-        int newBackLeftTarget = backLeftMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH);
-        int newBackRightTarget = backRightMotor.getCurrentPosition() + (int) (dist * COUNTS_PER_INCH);
-
-        frontLeftMotor.setTargetPosition(newFrontLeftTarget);
-        frontRightMotor.setTargetPosition(newFrontRightTarget);
-        backLeftMotor.setTargetPosition(newBackLeftTarget);
-        backRightMotor.setTargetPosition(newBackRightTarget);
-
-        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        runtime.reset();
-        frontLeftMotor.setPower(Math.abs(speed));
-        frontRightMotor.setPower(Math.abs(speed));
-        backLeftMotor.setPower(Math.abs(speed));
-        backRightMotor.setPower(Math.abs(speed));
-
-        while (opModeIsActive() &&
-                (frontLeftMotor.isBusy() &&
-                        frontRightMotor.isBusy() &&
-                        backLeftMotor.isBusy() &&
-                        backRightMotor.isBusy())) {
-
-        }
-
-        frontLeftMotor.setPower(0);
-        frontRightMotor.setPower(0);
-        backLeftMotor.setPower(0);
-        backRightMotor.setPower(0);
-
-        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    public void rotate(double speed,IMU imu, double degrees, boolean right){
-        double startAngle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
-        double orientation;
-        double target = startAngle + (right ?degrees : -degrees);
-        double power  = (right ? -speed : speed);
-        double distMoved = 0;
-        double distToMove = Math.abs(startAngle - target);
-        if(opModeIsActive()) {
-            frontLeftMotor.setPower(-power);
-            backLeftMotor.setPower(-power);
-            frontRightMotor.setPower(power);
-            backRightMotor.setPower(power);
-        }
-        while(distToMove > distMoved && opModeIsActive()){
-            telemetry.addData("Yaw (Z)", "%.1f Deg. (Heading)", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
-            telemetry.addData("Rotate dist", distMoved);
-            distMoved = Math.abs(startAngle - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
             telemetry.update();
         }
-        
-        frontLeftMotor.setPower(0);
-        frontRightMotor.setPower(0);
-        backLeftMotor.setPower(0);
-        backRightMotor.setPower(0);        
+        sleep(1250);
     }   
-    
-    public void encoderDrive(double speed,
-            double leftInches, double rightInches,
-            double timeoutS) {
-        int newFrontLeftTarget;
-        int newFrontRightTarget;
-        int newBackLeftTarget;
-        int newBackRightTarget;
-
-        if (opModeIsActive()) {
-
-            newFrontLeftTarget = frontLeftMotor.getCurrentPosition() - (int) (leftInches * COUNTS_PER_INCH);
-            newFrontRightTarget = frontRightMotor.getCurrentPosition() - (int) (rightInches * COUNTS_PER_INCH);
-            newBackLeftTarget = backLeftMotor.getCurrentPosition() - (int) (leftInches * COUNTS_PER_INCH);
-            newBackRightTarget = backRightMotor.getCurrentPosition() - (int) (rightInches * COUNTS_PER_INCH);
-
-            frontLeftMotor.setTargetPosition(newFrontLeftTarget);
-            frontRightMotor.setTargetPosition(newFrontRightTarget);
-            backLeftMotor.setTargetPosition(newBackLeftTarget);
-            backRightMotor.setTargetPosition(newBackRightTarget);
-            
-            frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            runtime.reset();
-            frontLeftMotor.setPower(Math.abs(speed));
-            frontRightMotor.setPower(Math.abs(speed));
-            backLeftMotor.setPower(Math.abs(speed));
-            backRightMotor.setPower(Math.abs(speed));
-
-            while (opModeIsActive() &&
-                    (runtime.seconds() < timeoutS) &&
-                    (frontLeftMotor.isBusy() &&
-                            frontRightMotor.isBusy() &&
-                            backLeftMotor.isBusy() &&
-                            backRightMotor.isBusy())) {
-
-                // Display it for the driver.
-                telemetry.addData("Running to", " %7d :%7d :%7d :%7d",
-                        newFrontLeftTarget,
-                        newFrontRightTarget,
-                        newBackLeftTarget,
-                        newBackRightTarget);
-                telemetry.addData("Currently at", " at %7d :%7d :%7d :%7d",
-                        frontLeftMotor.getCurrentPosition(),
-                        frontRightMotor.getCurrentPosition(),
-                        backLeftMotor.getCurrentPosition(),
-                        backRightMotor.getCurrentPosition());
-                telemetry.update();
-            }
-
-            // Stop all motion;
-            frontLeftMotor.setPower(0);
-            frontRightMotor.setPower(0);
-            backLeftMotor.setPower(0);
-            backRightMotor.setPower(0);
-            // Turn off RUN_TO_POSITION
-
-            frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            sleep(100); // optional pause after each move.
-        }
-    }
 }
+
