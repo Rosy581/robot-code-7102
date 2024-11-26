@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.hardware.Drive;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Clip Two Of Those THANGS", group = "Robot")
+@Autonomous(name = "Clip Two-uh", group = "Robot")
 
 public class ClipTwoOfThatTHANGS extends LinearOpMode {
     private IMU imu;
@@ -122,12 +122,22 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                     robot.encoderDrive(1,-2.0,-2.0);
                     state = "step VI";
                     break;
-                }
-                telemetry.addData("State", state);
-            /*claw.setPower(1);
-            robot.encoderDrive(DRIVE_SPEED, -2.3, -2.3);
-            slIde.moveTo(0);
-            robot.encoderDrive(DRIVE_SPEED/2, -12, -12);
+                case "step 6":
+                    claw.setPower(1);
+                    robot.encoderDrive(DRIVE_SPEED, -2.3, -2.3);
+                    state = "step 7";
+                    break;
+                case "step 7":
+                    slIde.setTargetPosition(0);
+                    robot.encoderDrive(DRIVE_SPEED/2, -12, -12);
+                    state = "step 8";
+                    break;
+                case "step 8":
+                    robot.rotate(180);
+                    break;
+                }   
+                telemetry.addData("Step", state);
+            /*
             robot.encoderDrive(DRIVE_SPEED, -5.0, 5.0);
             robot.moveRight(1, 24);
             */

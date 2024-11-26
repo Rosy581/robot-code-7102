@@ -31,6 +31,7 @@ public class TeleDrive extends LinearOpMode {
         backLeftMotor = hardwareMap.dcMotor.get("leftBack");
         frontRightMotor = hardwareMap.dcMotor.get("rightFront");
         backRightMotor = hardwareMap.dcMotor.get("rightBack");
+        
         //backArm1 = hardwareMap.dcMotor.get("backArm1");
         //backArm2 = hardwareMap.dcMotor.get("backArm2");
         slide = hardwareMap.dcMotor.get("slide");
@@ -48,7 +49,7 @@ public class TeleDrive extends LinearOpMode {
         frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        
+          
         clawServo.setDirection(DcMotorSimple.Direction.REVERSE); 
 
         double slowModeMod   = 1.0;
