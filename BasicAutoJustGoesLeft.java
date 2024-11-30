@@ -178,6 +178,7 @@ public class BasicAutoJustGoesLeft extends LinearOpMode {
             newFrontRightTarget = frontRightMotor.getCurrentPosition() + (int) (rightInches * COUNTS_PER_INCH);
             newBackLeftTarget = backLeftMotor.getCurrentPosition() + (int) (leftInches * COUNTS_PER_INCH);
             newBackRightTarget = backRightMotor.getCurrentPosition() + (int) (rightInches * COUNTS_PER_INCH);
+            ;
 
             frontLeftMotor.setTargetPosition(newFrontLeftTarget);
             frontRightMotor.setTargetPosition(newFrontRightTarget);

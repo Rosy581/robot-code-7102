@@ -8,7 +8,7 @@ import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.hardware.GP;
 import java.util.concurrent.TimeUnit;
 
-@TeleOp(name = "Tele Team Up")
+@TeleOp(name = "Tag Team That Specimen", group = "Robot")
 public class TwoPersonTele extends LinearOpMode {
 
     private DcMotor frontLeftMotor;
@@ -51,7 +51,7 @@ public class TwoPersonTele extends LinearOpMode {
         slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         
         clawServo.setDirection(DcMotorSimple.Direction.REVERSE); 
-        assServo.setDirection(DcMotorSimple.Direction.REVERSE); 
+        assServo.setDirection(DcMotorSimple.Direction.REVERSE);
         
         double slowModeMod = 1.0;
         boolean slowMode   = false;
@@ -62,7 +62,7 @@ public class TwoPersonTele extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            if(rateLimit.hasExpired() && gamepad1.x){
+            if(rateLimit.hasExpired() && (gamepad1.x || gamepad2.x)){
                 if(slowModeMod == 1){
                     slowModeMod = 0.25;
                     slowMode    = true;
@@ -73,42 +73,42 @@ public class TwoPersonTele extends LinearOpMode {
                 rateLimit.reset();
             }
 
-            if((gamepad2.rb && gamepad2.lb) || (gamepad2.up && gamepad2.down)){
+            if((gamepad2.right_bumper && gamepad2.left_bumper) || (gamepad2.dpad_up && gamepad2.dpad_down)){
                 slide.setPower(0);
-            } else if((gamepad2.up || gamepad2.rb) && slide.getCurrentPosition() < 10000){
+            } else if((gamepad2.dpad_up || gamepad2.right_bumper) && slide.getCurrentPosition() < 10000){
                 slide.setPower(1*slowModeMod*2);
-            } else if(gamepad2.down  || gamepad2.lb && !(slide.getCurrentPosition()<=50)){
+            } else if(gamepad2.dpad_down  || gamepad2.left_bumper && !(slide.getCurrentPosition()<=50)){
                 slide.setPower(-1*slowModeMod*2);
             } else {                                                             
                 slide.setPower(0);
             };
             
-            if((gamepad1.rb && gamepad1.lb) || (gamepad1.up && gamepad1.down)){
+            if((gamepad1.right_bumper && gamepad1.left_bumper) || (gamepad1.dpad_up && gamepad1.dpad_down)){
                 backArm1.setPower(0);
                 backArm2.setPower(0);
-            } else if((gamepad1.up || gamepad1.rb) && slide.getCurrentPosition() < 10000){
+            } else if((gamepad1.dpad_up || gamepad1.right_bumper) && slide.getCurrentPosition() < 10000){
                 backArm1.setPower(1*slowModeMod*2);
-                backArm2.setPower(-1*slowModeMod*2);
-            } else if(gamepad1.down  || gamepad1.lb && !(slide.getCurrentPosition()<=50)){
-                backArm1.setPower(-1*slowModeMod*2);
                 backArm2.setPower(1*slowModeMod*2);
+            } else if(gamepad1.dpad_down  || gamepad1.left_bumper && !(slide.getCurrentPosition()<=50)){
+                backArm1.setPower(-1*slowModeMod*2);
+                backArm2.setPower(-1*slowModeMod*2);
             } else {                                                             
                 backArm1.setPower(0);
                 backArm2.setPower(0);
             };
             
-            clawServo.setPower(-gamepad2.lt+gamepad2.rt-0.1);
-            assServo.setPower(-gamepad1.lt+gamepad1.rt-0.1);
+            clawServo.setPower(-gamepad2.left_trigger+gamepad2.right_trigger-0.1);
+            assServo.setPower(-gamepad1.left_trigger+gamepad1.right_trigger);
             
-            
-            telemetry.addData("pos",slide.getCurrentPosition());
+            telemetry.addData("thing",-gamepad1.left_trigger+gamepad1.right_trigger-0.1);
+            telemetry.addData("slide pos",slide.getCurrentPosition());
             telemetry.addData("Slowmode",slowMode);
             
-            double denominator = Math.max(Math.abs(gamepad1.left_y) + Math.abs(gamepad2.left_x) + Math.abs(gamepad1.right_x), 1);
-            double frontLeftPower  = ((gamepad1.left_y + gamepad2.left_x + gamepad1.right_x) / denominator)*slowModeMod;
-            double backLeftPower   = ((gamepad1.left_y - gamepad2.left_x + gamepad1.right_x) / denominator)*slowModeMod;
-            double frontRightPower = ((gamepad1.left_y - gamepad2.left_x - gamepad1.right_x) / denominator)*slowModeMod;
-            double backRightPower  = ((gamepad1.left_y + gamepad2.left_x - gamepad1.right_x) / denominator)*slowModeMod;
+            double denominator = Math.max(Math.abs(gamepad1.left_stick_y) + Math.abs(gamepad2.left_stick_x) + Math.abs(gamepad1.right_stick_x), 1);
+            double frontLeftPower  = ((gamepad1.left_stick_y + gamepad2.left_stick_x + gamepad1.right_stick_x) / denominator)*slowModeMod;
+            double backLeftPower   = ((gamepad1.left_stick_y - gamepad2.left_stick_x + gamepad1.right_stick_x) / denominator)*slowModeMod;
+            double frontRightPower = ((gamepad1.left_stick_y - gamepad2.left_stick_x - gamepad1.right_stick_x) / denominator)*slowModeMod;
+            double backRightPower  = ((gamepad1.left_stick_y + gamepad2.left_stick_x - gamepad1.right_stick_x) / denominator)*slowModeMod;
 
             frontLeftMotor.setPower(frontLeftPower);
             backLeftMotor.setPower(backLeftPower);

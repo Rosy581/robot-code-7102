@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.hardware.Drive;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Clip-Tuah (1)", group = "Robot")
+@Autonomous(name = "Clip that THANG", group = "Robot")
 
 public class ClipAuton extends LinearOpMode {
     private IMU imu;
@@ -92,35 +92,35 @@ public class ClipAuton extends LinearOpMode {
                     slide.setTargetPosition(2750);
                     slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     slide.setPower(1); 
-                    state = "step I";
+                    state = "step 1";
                     
                     break;
-                case "step I":
+                case "step 1":
                     robot.encoderDrive(0.35, 12.0, 12.0);
                     
-                    state = "step II";
+                    state = "step 2";
                     telemetry.addData("HERE","I AM");
                     break;
-                case "step II":
+                case "step 2":
                     if(!slide.isBusy()){
-                        state = "step III";
+                        state = "step 3";
                         robot.encoderDrive(0.5, -0.75,-0.75);
                     }
                     break;
-                case "step III":
+                case "step 3":
                     slide.setTargetPosition(2250);
-                    state = "step IV";
+                    state = "step 4";
                     rateLimit.reset();
                     break;
-                case "step IV":
+                case "step 4":
                     if(!slide.isBusy() && rateLimit.hasExpired()){
-                        state = "step V";
+                        state = "step 5";
                     }
                     break;
-                case "step V":
+                case "step 5":
                     claw.setPower(1);
                     robot.encoderDrive(1,-2.0,-2.0);
-                    state = "step VI";
+                    state = "step 6";
                     break;
                 case "step 6":
                     claw.setPower(1);
@@ -133,7 +133,7 @@ public class ClipAuton extends LinearOpMode {
                     state = "step 8";
                     break;
                 case "step 8":
-                    robot.encoderDrive(DRIVE_SPEED, -5.0, 5.0);
+                    robot.encoderDrive(DRIVE_SPEED, -5.0, -5.0);
                     state = "step 9";
                     break;
                 case "step 9":
@@ -141,11 +141,12 @@ public class ClipAuton extends LinearOpMode {
                     break;
                 }   
                 telemetry.addData("Step", state);
-            
+            /*
+            */
+            //telemetry.addData("Path", "Complete");
+
             telemetry.update();
         }
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
         sleep(1250);
     }   
 }
