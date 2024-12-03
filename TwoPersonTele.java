@@ -62,6 +62,10 @@ public class TwoPersonTele extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
+            double y  =  gamepad1.left_stick_y;
+            double x  =  -gamepad1.left_stick_x * 1.1;
+            double rx =  -gamepad1.right_stick_x;
+            
             if(rateLimit.hasExpired() && (gamepad1.x || gamepad2.x)){
                 if(slowModeMod == 1){
                     slowModeMod = 0.25;
@@ -97,18 +101,18 @@ public class TwoPersonTele extends LinearOpMode {
                 backArm2.setPower(0);
             };
             
-            clawServo.setPower(-gamepad2.left_trigger+gamepad2.right_trigger-0.1);
+            clawServo.setPower(-gamepad2.left_trigger+gamepad2.right_trigger);
             assServo.setPower(-gamepad1.left_trigger+gamepad1.right_trigger);
             
             telemetry.addData("thing",-gamepad1.left_trigger+gamepad1.right_trigger-0.1);
             telemetry.addData("slide pos",slide.getCurrentPosition());
             telemetry.addData("Slowmode",slowMode);
             
-            double denominator = Math.max(Math.abs(gamepad1.left_stick_y) + Math.abs(gamepad2.left_stick_x) + Math.abs(gamepad1.right_stick_x), 1);
-            double frontLeftPower  = ((gamepad1.left_stick_y + gamepad2.left_stick_x + gamepad1.right_stick_x) / denominator)*slowModeMod;
-            double backLeftPower   = ((gamepad1.left_stick_y - gamepad2.left_stick_x + gamepad1.right_stick_x) / denominator)*slowModeMod;
-            double frontRightPower = ((gamepad1.left_stick_y - gamepad2.left_stick_x - gamepad1.right_stick_x) / denominator)*slowModeMod;
-            double backRightPower  = ((gamepad1.left_stick_y + gamepad2.left_stick_x - gamepad1.right_stick_x) / denominator)*slowModeMod;
+            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+            double frontLeftPower = ((y + x + rx) / denominator)*slowModeMod;
+            double backLeftPower = (( y - x + rx) / denominator)*slowModeMod;
+            double frontRightPower = ((y - x - rx) / denominator)*slowModeMod;
+            double backRightPower = ((y + x - rx) / denominator)*slowModeMod;
 
             frontLeftMotor.setPower(frontLeftPower);
             backLeftMotor.setPower(backLeftPower);

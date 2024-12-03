@@ -86,7 +86,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
         String state = "Begin";
         waitForStart();
         while (opModeIsActive() && state != "finished") {
-            switch(state){
+            /*switch(state){
                 case "Begin":
                     claw.setPower(-0.25);
                     slide.setTargetPosition(2750);
@@ -139,10 +139,9 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                 case "step 9":
                     robot.moveRight(1, 24);
                     break;
-                }   
+                }*/   
                 telemetry.addData("Step", state);
-            /*
-            */
+                robot.rotate(0.5, 90);
             //telemetry.addData("Path", "Complete");
 
             telemetry.update();

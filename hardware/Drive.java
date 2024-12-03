@@ -58,6 +58,8 @@ public class Drive {
         
         while(opMode.opModeIsActive() && dist >= angle) {
             dist = Math.abs(init - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+            opMode.telemetry.addData("dist", dist);
+            opMode.telemetry.update();
         }
         
         frontLeftMotor.setPower(0);
