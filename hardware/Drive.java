@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 
 public class Drive {
     public static final double COUNTS_PER_MOTOR_REV = 1440; // eg: TETRIX Motor Encoder
@@ -19,15 +21,16 @@ public class Drive {
     private DcMotor frontLeftMotor;
     private DcMotor backLeftMotor;
     private LinearOpMode opMode;
-    private IMU imu;
+    public IMU imu;
     
-    public Drive(DcMotor backLeftMotor, DcMotor frontLeftMotor, DcMotor backRightMotor, DcMotor frontRightMotor, IMU imu, LinearOpMode opMode) {
-        this.backLeftMotor = backLeftMotor;
-        this.frontLeftMotor = frontLeftMotor;
-        this.backRightMotor = backRightMotor;
-        this.frontRightMotor = frontRightMotor;
-        this.imu = imu;
+    public Drive(HardwareMap hardwareMap,LinearOpMode opMode) {
+        this.frontLeftMotor = hardwareMap.dcMotor.get("leftFront");
+        this.backLeftMotor = hardwareMap.dcMotor.get("leftBack");
+        this.frontRightMotor = hardwareMap.dcMotor.get("rightFront");
+        this.backRightMotor = hardwareMap.dcMotor.get("rightBack");
+        this.imu = hardwareMap.get(IMU.class, "imu");
         this.opMode = opMode;
+
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -45,6 +48,13 @@ public class Drive {
         backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+
+        imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
 
     public void rotate(double angle, double speed) {
