@@ -76,7 +76,7 @@ public class TwoPersonTele extends LinearOpMode {
                 }
                 rateLimit.reset();
             }
-
+            
             if((gamepad2.right_bumper && gamepad2.left_bumper) || (gamepad2.dpad_up && gamepad2.dpad_down)){
                 slide.setPower(0);
             } else if((gamepad2.dpad_up || gamepad2.right_bumper) && slide.getCurrentPosition() < 10000){

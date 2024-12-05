@@ -42,11 +42,6 @@ public class ClipAuton extends LinearOpMode {
         YawPitchRollAngles orientation = robot.imu.getRobotYawPitchRollAngles();
 
         telemetry.addData("Yaw (Z)", "%.1f Deg. (Heading)", orientation.getYaw(AngleUnit.DEGREES));
-        telemetry.addData("Starting at", "%7d :%7d :%7d :%7d",
-                frontLeftMotor.getCurrentPosition(),
-                backLeftMotor.getCurrentPosition(),
-                backRightMotor.getCurrentPosition(),
-                frontRightMotor.getCurrentPosition());
         telemetry.update();
         String state = "Begin";
         waitForStart();
