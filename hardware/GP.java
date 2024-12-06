@@ -29,5 +29,4 @@ public class GP {
         right_x = gamepad.right_stick_x;
         right_y = gamepad.right_stick_y;
     }
-    
 }
