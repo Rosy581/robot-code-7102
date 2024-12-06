@@ -5,11 +5,11 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 public class GP {
     private Gamepad controller;
-    public boolean x, y, a, b;
-    public float rt,lt;
-    public boolean rb,lb;
-    public boolean up, down, left, right;
-    public float left_x, left_y, right_x, right_y;
+    public boolean x, y, a, b = false;
+    public float rt,lt = 0;
+    public boolean rb,lb = false;
+    public boolean up, down, left, right = false;
+    public float left_x, left_y, right_x, right_y = 0;
 
     public void update(Gamepad gamepad) {
         x = gamepad.x;
@@ -28,5 +28,9 @@ public class GP {
         left_y = gamepad.left_stick_y;
         right_x = gamepad.right_stick_x;
         right_y = gamepad.right_stick_y;
+    }
+
+    public static boolean checkPressed(boolean past, boolean buttonCurrent){
+        return (!past && buttonCurrent);
     }
 }

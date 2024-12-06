@@ -2,13 +2,14 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 public class Slide {
     private DcMotor slide;
     private LinearOpMode opmode;
-    public Slide(DcMotor slide, LinearOpMode opmode){
-        this.slide = slide;
+    public Slide(HardwareMap hardwareMap, LinearOpMode opmode){
+        this.slide = hardwareMap.dcMotor.get("slide");
         this.opmode = opmode;
     }
         
