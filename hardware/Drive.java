@@ -20,6 +20,8 @@ public class Drive {
     private DcMotor backRightMotor;
     private DcMotor frontLeftMotor;
     private DcMotor backLeftMotor;
+    private DcMotor backArm1;
+    private DcMotor backArm2;
     private LinearOpMode opMode;
     public IMU imu;
     
@@ -28,11 +30,14 @@ public class Drive {
         this.backLeftMotor = hardwareMap.dcMotor.get("leftBack");
         this.frontRightMotor = hardwareMap.dcMotor.get("rightFront");
         this.backRightMotor = hardwareMap.dcMotor.get("rightBack");
+        this.backArm1 = hardwareMap.dcMotor.get("backArm1");
+        this.backArm2 = hardwareMap.dcMotor.get("backArm2");
         this.imu = hardwareMap.get(IMU.class, "imu");
         this.opMode = opMode;
 
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backArm2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -48,6 +53,8 @@ public class Drive {
         backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backArm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backArm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
@@ -55,21 +62,22 @@ public class Drive {
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
         imu.initialize(new IMU.Parameters(orientationOnRobot));
+        imu.resetYaw();
     }
 
-    public void rotate(double angle, double speed) {
-        double init = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
-        double dist = 0;
+    public void rotateTo(double target){
+        rotateTo(target,0.5);
+    }
+
+    public void rotateTo(double target, double speed) {
+        target = Math.abs(target);
         
         frontLeftMotor.setPower(speed);
         frontRightMotor.setPower(-speed);
         backLeftMotor.setPower(speed);
         backRightMotor.setPower(-speed);
         
-        while(opMode.opModeIsActive() && dist >= angle) {
-            dist = Math.abs(init - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
-            opMode.telemetry.addData("dist", dist);
-            opMode.telemetry.update();
+        while(opMode.opModeIsActive() && (target+1 <= Math.abs(getHeading()) || Math.abs(getHeading()) <= target -1)) {
         }
         
         frontLeftMotor.setPower(0);
@@ -77,13 +85,21 @@ public class Drive {
         backLeftMotor.setPower(0);
         backRightMotor.setPower(0);
     }
-
+    
+    public void moveArm (long time) throws InterruptedException {
+        backArm1.setPower(1);
+        backArm2.setPower(1);
+        Thread.sleep(time);
+        backArm1.setPower(0);
+        backArm2.setPower(0);        
+    }
+    
     public double getHeading(){
         return getHeading(AngleUnit.DEGREES);
     }
 
     public double getHeading(AngleUnit unit){
-        return imu.getRobotYawPitchRollAngles().getYaw(angle);
+        return imu.getRobotYawPitchRollAngles().getYaw(unit);
     }
 
     public void moveRight(double speed, double dist) {

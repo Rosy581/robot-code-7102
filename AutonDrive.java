@@ -26,14 +26,14 @@ public class AutonDrive extends LinearOpMode {
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double DRIVE_SPEED = 0.6;
-    static final double TURN_SPEED = 0.5;
+    static final double TURN_SPEED  = 0.5;
 
     @Override
     public void runOpMode() {
-        frontLeftMotor = hardwareMap.dcMotor.get("leftFront");
-        backLeftMotor = hardwareMap.dcMotor.get("leftBack");
+        frontLeftMotor  = hardwareMap.dcMotor.get("leftFront");
+        backLeftMotor   = hardwareMap.dcMotor.get("leftBack");
         frontRightMotor = hardwareMap.dcMotor.get("rightFront");
-        backRightMotor = hardwareMap.dcMotor.get("rightBack");
+        backRightMotor  = hardwareMap.dcMotor.get("rightBack");
         imu = hardwareMap.get(IMU.class, "imu");
 
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);

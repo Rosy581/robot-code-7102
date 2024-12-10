@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.hardware.Slide;
 import org.firstinspires.ftc.teamcode.hardware.Drive;
@@ -15,11 +16,10 @@ import java.util.concurrent.TimeUnit;
 @Autonomous(name = "Clip Tuah that THANG", group = "Robot")
 
 public class ClipTwoOfThatTHANGS extends LinearOpMode {
-    private IMU imu;
     private ElapsedTime runtime = new ElapsedTime();
     private CRServo claw;
     private DcMotor slide;
-    private hardware.Drive robot;
+    private Drive robot;
     Deadline rateLimit = new Deadline(250, TimeUnit.MILLISECONDS);
     
     static final double DRIVE_SPEED = 0.5;
@@ -29,7 +29,6 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         claw = hardwareMap.crservo.get("claw");
         slide = hardwareMap.dcMotor.get("slide");
-        imu = hardwareMap.get(IMU.class, "imu");
         robot = new Drive(hardwareMap, this);
 
         slide.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -40,13 +39,14 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
 
         telemetry.addData("Yaw (Z)", "%.1f Deg. (Heading)", orientation.getYaw(AngleUnit.DEGREES));
         telemetry.update();
-        String state /*= "Begin"*/;
+        String state = "Begin";
         waitForStart();
         while (opModeIsActive() && state != "finished") {
             switch(state){
                 case "Begin":
                     claw.setPower(-0.25);
                     slide.setTargetPosition(2750);
+                    robot.moveArm(450);
                     slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     slide.setPower(1); 
                     state = "step 1";
@@ -81,30 +81,29 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                     state = "step 7";
                     break;
                 case "step 7":
-                    slide.setTargetPosition(900 /*Wall height*/);
-                    robot.encoderDrive(DRIVE_SPEED/2, -6, -6);
+                    robot.rotateTo(180,0.5);
                     state = "step 8";
                     break;
                 case "step 8":
-                    //rotate
-                    state = "step 9";
+                    robot.moveLeft(0.5,28);
+                    robot.moveRight(0.25,1);
+                    robot.rotateTo(180,0.5);
+                    state = "step 9"; 
                     break;
                 case "step 9":
-                    robot.moveLeft(0.75,24);
-                    state = "step 10";
-                    break;
-                case "step 10":
-                    robot.encoderDrive(DRIVE_SPEED/2, 10, 10);
+                    robot.encoderDrive(0.2, 6, 6);
                     state = "step 11";
                     break;
                 case "step 11":
-                    robot.encoderDrive(1, -6, -6);
-                    thread.sleep(1250);
+                    robot.encoderDrive(0.5, -5.6, -5.6);
+                    slide.setTargetPosition(850);
+                    Thread.sleep(1000);
                     state = "step 12";
                     break;
-                case "step 12":
-                    robot.encoderDrive(0.5, 6, 6);
+                case "step 12": 
+                    robot.encoderDrive(0.25, 6, 6); 
                     claw.setPower(-0.25);
+                    Thread.sleep(750);
                     state = "step 13";
                     break;
                 case "step 13":
@@ -115,20 +114,51 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                 case "step 14":
                     robot.moveRight(DRIVE_SPEED,12);
                     state = "step 15";
-                    break;
+                     break;
                 case "step 15":
                     if(!slide.isBusy()){
-                        
+                        state = "step 16";
                     }
                     break;
+                case "step 16":
+                    robot.rotateTo(0,0.5);
+                    robot.moveLeft(0.5,12);
+                    robot.encoderDrive(0.125,2,2);
+                    robot.encoderDrive(0.5, -0.75,-0.75);
+                    state = "step 17";
+                    break;
+                case "step 17":
+                    slide.setTargetPosition(2250);
+                    state = "step 18";
+                    rateLimit.reset();
+                    break;
+                case "step 18":
+                    if(!slide.isBusy() && rateLimit.hasExpired()){
+                        state = "step 19";
+                    }
+                    break;
+                case "step 19":
+                    claw.setPower(1);
+                    robot.encoderDrive(1,-2.0,-2.0);
+                    state = "step 20";
+                    break;
+                case "step 20":
+                    robot.encoderDrive(0.25,-12,-12);
+                    slide.setTargetPosition(0);
+                    state = "step 21";
+                case "step 21":
+                    robot.moveRight(1, 24);
+                    state = "finished";
+                    break;
                 }
-                telemetry.addData("Step", state);
-                robot.rotate(0.5, 90);
-            //telemetry.addData("Path", "Complete");
-
+            telemetry.addData("heading", robot.getHeading());
+            telemetry.addData("Step", state);
             telemetry.update();
-        }
+        } 
+        
+        telemetry.addData("Path", "Complete");
+        telemetry.update();
         sleep(1250);
     }   
 }
-
+ 

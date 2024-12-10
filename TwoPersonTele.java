@@ -53,9 +53,12 @@ public class TwoPersonTele extends LinearOpMode {
         clawServo.setDirection(DcMotorSimple.Direction.REVERSE); 
         assServo.setDirection(DcMotorSimple.Direction.REVERSE);
         
-        double slowModeMod = 1.0;
-        boolean slowMode   = false;
-        Deadline rateLimit = new Deadline(250, TimeUnit.MILLISECONDS);
+        double slowModeMod  = 1.0;
+        double sloeModeMod2 = 1.0;
+        boolean slowMode    = false;
+        boolean slowMode2   = false;
+        Deadline rateLimit  = new Deadline(250, TimeUnit.MILLISECONDS);
+        Deadline rateLimit2  = new Deadline(250, TimeUnit.MILLISECONDS);
 
         waitForStart();
         
@@ -78,7 +81,7 @@ public class TwoPersonTele extends LinearOpMode {
             }
             
             if((gamepad2.right_bumper && gamepad2.left_bumper) || (gamepad2.dpad_up && gamepad2.dpad_down)){
-                slide.setPower(0);
+                slide.setPower(0); 
             } else if((gamepad2.dpad_up || gamepad2.right_bumper) && slide.getCurrentPosition() < 10000){
                 slide.setPower(1*slowModeMod*2);
             } else if(gamepad2.dpad_down  || gamepad2.left_bumper && !(slide.getCurrentPosition()<=50)){
