@@ -55,6 +55,7 @@ public class TwoPersonTele extends LinearOpMode {
         
         double slowModeMod  = 1.0;
         double sloeModeMod2 = 1.0;
+        double isReversed = false;
         boolean slowMode    = false;
         boolean slowMode2   = false;
         Deadline rateLimit  = new Deadline(250, TimeUnit.MILLISECONDS);
@@ -65,17 +66,28 @@ public class TwoPersonTele extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            double y  =  gamepad1.left_stick_y;
-            double x  =  -gamepad1.left_stick_x * 1.1;
-            double rx =  -gamepad1.right_stick_x;
+            double y  =  isReversed ? -gamepad1.left_stick_y :  gamepad1.left_stick_y;
+            double x  = (isReversed ? gamepad1.left_stick_x  : -gamepad1.left_stick_x) * 1.1;
+            double rx =  isReversed ? gamepad1.right_stick_x : -gamepad1.right_stick_x;
             
-            if(rateLimit.hasExpired() && (gamepad1.x || gamepad2.x)){
+            if(rateLimit.hasExpired() && (gamepad1.x)){
                 if(slowModeMod == 1){
                     slowModeMod = 0.25;
                     slowMode    = true;
                 } else if(slowModeMod == 0.25){
                     slowModeMod = 1.0;
                     slowMode    = false;
+                }
+                rateLimit.reset();
+            }
+            
+            if(rateLimit2.hasExpired() && (gamepad2.x)){
+                if(slowModeMod2 == 1){
+                    slowModeMod2 = 0.25;
+                    slowMode2    = true;
+                } else {
+                    slowModeMod2 = 1.0;
+                    slowMode2    = false;
                 }
                 rateLimit.reset();
             }
@@ -109,13 +121,18 @@ public class TwoPersonTele extends LinearOpMode {
             
             telemetry.addData("thing",-gamepad1.left_trigger+gamepad1.right_trigger-0.1);
             telemetry.addData("slide pos",slide.getCurrentPosition());
-            telemetry.addData("Slowmode",slowMode);
-            
-            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            double frontLeftPower = ((y + x + rx) / denominator)*slowModeMod;
-            double backLeftPower = (( y - x + rx) / denominator)*slowModeMod;
-            double frontRightPower = ((y - x - rx) / denominator)*slowModeMod;
-            double backRightPower = ((y + x - rx) / denominator)*slowModeMod;
+            telemetry.addData("Slowmode (pl. 1)",slowMode);
+            telemetry.addData("Slowmode (pl. 2)",slowMode2);
+
+            if(isReversed){
+                double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+                double frontLeftPower = ((y + x + rx) / denominator)*slowModeMod;
+                double backLeftPower = (( y - x + rx) / denominator)*slowModeMod;
+                double frontRightPower = ((y - x - rx) / denominator)*slowModeMod;
+                double backRightPower = ((y + x - rx) / denominator)*slowModeMod;
+            } else {
+
+            }
 
             frontLeftMotor.setPower(frontLeftPower);
             backLeftMotor.setPower(backLeftPower);
