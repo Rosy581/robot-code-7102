@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -16,13 +17,14 @@ public class Drive {
     public static final double DRIVE_SPEED = 0.5;
     public static final double TURN_SPEED = 0.5;
     
-    private DcMotor frontRightMotor; 
-    private DcMotor backRightMotor;
-    private DcMotor frontLeftMotor;
-    private DcMotor backLeftMotor;
-    private DcMotor backArm1;
-    private DcMotor backArm2;
+    public DcMotor frontRightMotor; 
+    public DcMotor backRightMotor;
+    public DcMotor frontLeftMotor;
+    public DcMotor backLeftMotor;
+    public DcMotor backArm1;
+    public DcMotor backArm2;
     private LinearOpMode opMode;
+    public DigitalChannel touchSensor;
     public IMU imu;
     
     public Drive(HardwareMap hardwareMap,LinearOpMode opMode) {
@@ -34,11 +36,14 @@ public class Drive {
         this.backArm2 = hardwareMap.dcMotor.get("backArm2");
         this.imu = hardwareMap.get(IMU.class, "imu");
         this.opMode = opMode;
+        this.touchSensor = hardwareMap.get(DigitalChannel.class, "touchMe");
+
+        touchSensor.setMode(DigitalChannel.Mode.INPUT);
 
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backArm2.setDirection(DcMotorSimple.Direction.REVERSE);
-
+        
         backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -65,16 +70,17 @@ public class Drive {
         imu.resetYaw();
     }
 
+    public boolean isTouched(){
+        return !touchSensor.getState();
+    }
+
     public void rotateTo(double target){
         rotateTo(target,0.5);
     }
 
     public void rotateTo(double target, double speed) {
         target = Math.abs(target);
-        /*
-        turn to 90 from 45 
-         
-         */
+        
         frontLeftMotor.setPower(speed);
         frontRightMotor.setPower(-speed);
         backLeftMotor.setPower(speed);

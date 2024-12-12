@@ -21,7 +21,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
     private DcMotor slide;
     private Drive robot;
     Deadline rateLimit = new Deadline(250, TimeUnit.MILLISECONDS);
-    
+
     static final double DRIVE_SPEED = 0.5;
     static final double TURN_SPEED = 0.5;
 
@@ -92,16 +92,21 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                     break;
                 case "step 9":
                     robot.encoderDrive(0.2, 6, 6);
-                    state = "step 11";
+                    state = "step 10";
+                    break;
+                case "step 10":
+                    if(robot.isTouched()){
+                        state = "step 11";
+                    }
                     break;
                 case "step 11":
-                    robot.encoderDrive(0.5, -5.6, -5.6);
+                    robot.encoderDrive(0.5, -6, -6);
                     slide.setTargetPosition(850);
                     Thread.sleep(1000);
                     state = "step 12";
                     break;
                 case "step 12": 
-                    robot.encoderDrive(0.25, 6, 6); 
+                    robot.encoderDrive(0.25, 5.6, 5.6); 
                     claw.setPower(-0.25);
                     Thread.sleep(750);
                     state = "step 13";
@@ -123,7 +128,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                 case "step 16":
                     robot.rotateTo(0,0.5);
                     robot.moveLeft(0.5,12);
-                    robot.encoderDrive(0.125,2,2);
+                    robot.encoderDrive(0.125,5,5);
                     robot.encoderDrive(0.5, -0.75,-0.75);
                     state = "step 17";
                     break;
@@ -139,6 +144,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                     break;
                 case "step 19":
                     claw.setPower(1);
+                    Thread.sleep(125);
                     robot.encoderDrive(1,-2.0,-2.0);
                     state = "step 20";
                     break;
