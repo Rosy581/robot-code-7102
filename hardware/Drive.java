@@ -80,7 +80,7 @@ public class Drive {
 
     public void rotateTo(double target, double speed) {
         target = Math.abs(target);
-        
+
         frontLeftMotor.setPower(speed);
         frontRightMotor.setPower(-speed);
         backLeftMotor.setPower(speed);
@@ -101,6 +101,28 @@ public class Drive {
         Thread.sleep(time);
         backArm1.setPower(0);
         backArm2.setPower(0);        
+    }
+
+    public void setPower(double n1, double n2){
+        setPower(n1,n2,n1,n2);
+    }
+    
+    public void setPower(double n) throws InterruptedException {
+        setPower(n,n,n,n);
+        if(n == 0){
+            Thread.sleep(100);
+        }
+    }
+    
+    public void setPower(double n1, double n2, double n3, double n4){
+        n1 = -n1;
+        n2 = -n2;
+        n3 = -n3;
+        n4 = -n4;
+        frontLeftMotor.setPower(n1);
+        frontRightMotor.setPower(n2);
+        backLeftMotor.setPower(n3);
+        backRightMotor.setPower(n4);
     }
     
     public double getHeading(){
@@ -192,7 +214,11 @@ public class Drive {
         backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-
+    
+    public void encoderDrive(double speed, double dist) {
+        encoderDrive(speed,dist,dist);
+    }
+    
     public void encoderDrive(double speed,
             double leftInches, double rightInches) {
         int newFrontLeftTarget;

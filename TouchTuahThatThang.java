@@ -13,9 +13,9 @@ import org.firstinspires.ftc.teamcode.hardware.Drive;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Clip Tuah that THANG", group = "Robot")
+@Autonomous(name = "Clip Tuah that THANG (touching edition)", group = "Robot")
 
-public class ClipTwoOfThatTHANGS extends LinearOpMode {
+public class TouchTuahThatTHANG extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private CRServo claw;
     private DcMotor slide;
@@ -43,7 +43,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
         waitForStart();
         while (opModeIsActive() && state != "finished") {
             switch(state){
-                case "Begin":
+                case "Begin":  
                     claw.setPower(-0.25);
                     slide.setTargetPosition(2750);
                     robot.moveArm(450);
@@ -77,21 +77,25 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                     state = "step 6";
                     break;
                 case "step 6":
-                    robot.encoderDrive(DRIVE_SPEED, -2.3, -2.3);
+                    robot.encoderDrive(0.75, -2.3, -2.3);
                     state = "step 7";
                     break;
                 case "step 7":
-                    robot.rotateTo(180,0.5);
+                    robot.rotateTo(90,-0.25);
+                    robot.encoderDrive(1,15);
                     state = "step 8";
                     break;
                 case "step 8":
-                    robot.moveLeft(0.5,28);
-                    robot.moveRight(0.25,1);
-                    robot.rotateTo(180,0.5);
-                    state = "step 9"; 
+                    robot.setPower(.25);    
+                    if(robot.isTouched()){
+                        robot.setPower(0);
+                        robot.encoderDrive(-0.25,2.5);
+                        robot.rotateTo(180,-0.5);
+                        state = "step 9"; 
+                    }
                     break;
                 case "step 9":
-                    robot.encoderDrive(0.2, 6, 6);
+                    robot.setPower(0.25);
                     state = "step 10";
                     break;
                 case "step 10":
@@ -101,19 +105,19 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                     break;
                 case "step 11":
                     robot.encoderDrive(0.5, -6, -6);
-                    slide.setTargetPosition(850); 
+                    slide.setTargetPosition(850);
                     Thread.sleep(1000);
                     state = "step 12";
                     break;
                 case "step 12": 
-                    robot.encoderDrive(0.25, 5.6, 5.6); 
+                    robot.encoderDrive(0.25, 5.75, 5.75); 
                     claw.setPower(-0.25);
-                    Thread.sleep(750);
+                    Thread.sleep(250);
                     state = "step 13";
                     break;
                 case "step 13":
                     slide.setTargetPosition(2750);
-                    robot.encoderDrive(1,-6,-6);
+                    robot.encoderDrive(1,-6);
                     state = "step 14";
                     break;
                 case "step 14":
@@ -128,8 +132,8 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                 case "step 16":
                     robot.rotateTo(0,0.5);
                     robot.moveLeft(0.5,12);
-                    robot.encoderDrive(0.125,5,5);
-                    robot.encoderDrive(0.5, -0.75,-0.75);
+                    robot.encoderDrive(0.25,5);
+                    robot.encoderDrive(0.5, -0.75);
                     state = "step 17";
                     break;
                 case "step 17":
@@ -145,10 +149,11 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                 case "step 19":
                     claw.setPower(1);
                     Thread.sleep(125);
+                    robot.encoderDrive(1,-2.0);
                     state = "step 20";
                     break;
                 case "step 20":
-                    robot.encoderDrive(0.25,-12,-12);
+                    robot.encoderDrive(0.5,-12);
                     slide.setTargetPosition(0);
                     state = "step 21";
                 case "step 21":
@@ -166,4 +171,3 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
         sleep(1250);
     }   
 }
- 
