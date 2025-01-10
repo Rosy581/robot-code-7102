@@ -23,7 +23,7 @@ public class ClipAuton extends LinearOpMode {
     private DcMotor slide;
     private Drive robot;
     Deadline rateLimit = new Deadline(250, TimeUnit.MILLISECONDS);
-    
+
     static final double DRIVE_SPEED = 0.5;
     static final double TURN_SPEED = 0.5;
 
@@ -31,7 +31,6 @@ public class ClipAuton extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         claw = hardwareMap.crservo.get("claw");
         slide = hardwareMap.dcMotor.get("slide");
-        imu = hardwareMap.get(IMU.class, "imu");
         robot = new Drive(hardwareMap, this);
 
         slide.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -45,25 +44,23 @@ public class ClipAuton extends LinearOpMode {
         String state = "Begin";
         waitForStart();
         while (opModeIsActive() && state != "finished") {
-            switch(state){
+            switch (state) {
                 case "Begin":
                     claw.setPower(-0.25);
                     slide.setTargetPosition(2750);
+                    robot.moveArm(450);
                     slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    slide.setPower(1); 
+                    slide.setPower(1);
                     state = "step 1";
-                    
                     break;
                 case "step 1":
                     robot.encoderDrive(0.35, 12.0, 12.0);
-                    
                     state = "step 2";
-                    telemetry.addData("HERE","I AM");
                     break;
                 case "step 2":
-                    if(!slide.isBusy()){
+                    if (!slide.isBusy()) {
+                        robot.encoderDrive(0.5, -0.75, -0.75);
                         state = "step 3";
-                        robot.encoderDrive(0.5, -0.75,-0.75);
                     }
                     break;
                 case "step 3":
@@ -72,40 +69,36 @@ public class ClipAuton extends LinearOpMode {
                     rateLimit.reset();
                     break;
                 case "step 4":
-                    if(!slide.isBusy() && rateLimit.hasExpired()){
+                    if (!slide.isBusy() && rateLimit.hasExpired()) {
                         state = "step 5";
                     }
                     break;
                 case "step 5":
                     claw.setPower(1);
-                    robot.encoderDrive(1,-2.0,-2.0);
+                    robot.encoderDrive(1, -2.0, -2.0);
                     state = "step 6";
                     break;
                 case "step 6":
-                    claw.setPower(1);
-                    robot.encoderDrive(DRIVE_SPEED, -2.3, -2.3);
+                    robot.encoderDrive(0.75, -2.3, -2.3);
                     state = "step 7";
                     break;
                 case "step 7":
-                    slide.setTargetPosition(0);
-                    robot.encoderDrive(DRIVE_SPEED/2, -12, -12);
+                    robot.rotateTo(90, -0.25);
+                    robot.encoderDrive(1, 15);
+                    robot.setPower(.25);
                     state = "step 8";
                     break;
                 case "step 8":
-                    robot.encoderDrive(DRIVE_SPEED, -5.0, -5.0);
-                    state = "step 9";
+                    if (robot.isTouched()) {
+                        robot.setPower(0);
+                        state = "step 9";
+                    }
                     break;
                 case "step 9":
-                    robot.moveRight(1, 24);
+                    robot.moveRight(0.5,10); 
+                    state = "finished";  
                     break;
-                }   
-                telemetry.addData("Step", state);
-
-            //telemetry.addData("Path", "Complete");
-
-            telemetry.update();
+            }
         }
-        sleep(1250);
-    }   
+    }
 }
-
