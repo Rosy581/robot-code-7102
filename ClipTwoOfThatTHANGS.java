@@ -101,7 +101,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                     break;
                 case "step 11":
                     robot.encoderDrive(0.5, -6, -6);
-                    slide.setTargetPosition(850); 
+                    slide.setTargetPosition(850);
                     Thread.sleep(1000);
                     state = "step 12";
                     break;
@@ -145,6 +145,7 @@ public class ClipTwoOfThatTHANGS extends LinearOpMode {
                 case "step 19":
                     claw.setPower(1);
                     Thread.sleep(125);
+                    robot.encoderDrive(1,-2.0,-2.0);
                     state = "step 20";
                     break;
                 case "step 20":

@@ -83,14 +83,15 @@ public class TouchTuahThatTHANG extends LinearOpMode {
                 case "step 7":
                     robot.rotateTo(90,-0.25);
                     robot.encoderDrive(1,15);
+                    robot.setPower(.25);   
                     state = "step 8";
                     break;
-                case "step 8":
-                    robot.setPower(.25);    
+                case "step 8":  
                     if(robot.isTouched()){
                         robot.setPower(0);
-                        robot.encoderDrive(-0.25,2.5);
-                        robot.rotateTo(180,-0.5);
+                        robot.encoderDrive(0.5,-3);
+                        robot.rotateTo(180,-0.5); 
+                        Thread.sleep(100);
                         state = "step 9"; 
                     }
                     break;
@@ -112,7 +113,7 @@ public class TouchTuahThatTHANG extends LinearOpMode {
                 case "step 12": 
                     robot.encoderDrive(0.25, 5.75, 5.75); 
                     claw.setPower(-0.25);
-                    Thread.sleep(250);
+                    Thread.sleep(400);
                     state = "step 13";
                     break;
                 case "step 13":
@@ -171,3 +172,4 @@ public class TouchTuahThatTHANG extends LinearOpMode {
         sleep(1250);
     }   
 }
+ 
