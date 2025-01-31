@@ -10,7 +10,7 @@ public class GP {
     public boolean rb,lb = false;
     public boolean up, down, left, right = false;
     public float left_x, left_y, right_x, right_y = 0;
-
+    
     public void update(Gamepad gamepad) {
         x = gamepad.x;
         y = gamepad.y;

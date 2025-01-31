@@ -42,17 +42,21 @@ public class Drive {
 
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backArm2.setDirection(DcMotorSimple.Direction.REVERSE);
+        backArm1.setDirection(DcMotorSimple.Direction.REVERSE);
         
         backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
+        backArm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backArm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        
         backRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backArm1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backArm2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -60,7 +64,7 @@ public class Drive {
         frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backArm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backArm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
+        
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
@@ -95,13 +99,19 @@ public class Drive {
         backRightMotor.setPower(0);
     }
     
-    public void moveArm (long time) throws InterruptedException {
+    public void moveArm (int target){
+        backArm1.setTargetPosition(target);
+        backArm2.setTargetPosition(target);
+        
+        backArm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backArm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        
+        backArm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backArm2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        
         backArm1.setPower(1);
         backArm2.setPower(1);
-        Thread.sleep(time);
-        backArm1.setPower(0);
-        backArm2.setPower(0);        
-    }
+        }
 
     public void setPower(double n1, double n2){
         setPower(n1,n2,n1,n2);
@@ -219,8 +229,22 @@ public class Drive {
         encoderDrive(speed,dist,dist);
     }
     
+    public void strafeDrive(double x, double y, double rx){
+            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+            
+            double frontLeftPower  = ((y + x + rx) / denominator);
+            double backLeftPower   = ((y - x + rx) / denominator);
+            double frontRightPower = ((y - x - rx) / denominator);
+            double backRightPower  = ((y + x - rx) / denominator);
+
+            frontLeftMotor.setPower(frontLeftPower);
+            backLeftMotor.setPower(backLeftPower);
+            frontRightMotor.setPower(frontRightPower);
+            backRightMotor.setPower(backRightPower);
+    }
+    
     public void encoderDrive(double speed,
-            double leftInches, double rightInches) {
+        double leftInches, double rightInches) {
         int newFrontLeftTarget;
         int newFrontRightTarget;
         int newBackLeftTarget;

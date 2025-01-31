@@ -13,9 +13,10 @@ import org.firstinspires.ftc.teamcode.hardware.Drive;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Clip Tuah that THANG (touching edition)", group = "Robot")
+@Autonomous(name = "Joe Tuah", group = "Robot")
 
-public class TouchTuahThatTHANG extends LinearOpMode {
+public class JoeTuah extends LinearOpMode 
+{
     private ElapsedTime runtime = new ElapsedTime();
     private CRServo claw;
     private DcMotor slide;
@@ -26,7 +27,8 @@ public class TouchTuahThatTHANG extends LinearOpMode {
     static final double TURN_SPEED = 0.5;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() throws InterruptedException 
+    {
         claw = hardwareMap.crservo.get("claw");
         slide = hardwareMap.dcMotor.get("slide");
         robot = new Drive(hardwareMap, this);
@@ -41,23 +43,26 @@ public class TouchTuahThatTHANG extends LinearOpMode {
         telemetry.update();
         String state = "Begin";
         waitForStart();
-        while (opModeIsActive() && state != "finished") {
-            switch(state){
-                case "Begin":  
+        while (opModeIsActive() && state != "finished") 
+        {
+            switch(state)
+            {
+              case "Begin":  
                     claw.setPower(-0.25);
                     slide.setTargetPosition(2750);
-                    robot.moveArm(1000);
+                    robot.moveArm(450);
                     slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    slide.setPower(1); 
+                    slide.setPower(1.43); 
                     state = "step 1";
                     break;
                 case "step 1":
-                    robot.encoderDrive(0.35, 12.0, 12.0);
+                    robot.encoderDrive(0.5, 12.0, 12.0);
                     state = "step 2";
                     break;
                 case "step 2":
-                    if(!slide.isBusy()){
-                        robot.encoderDrive(0.5, -0.75,-0.75); 
+                    if(!slide.isBusy())
+                    {
+                        robot.encoderDrive(0.5, -0.75,-0.75);
                         state = "step 3";
                     }
                     break;
@@ -67,9 +72,8 @@ public class TouchTuahThatTHANG extends LinearOpMode {
                     rateLimit.reset();
                     break;
                 case "step 4":
-                    if(!slide.isBusy() && rateLimit.hasExpired()){
-                        robot.backArm1.setPower(0);
-                        robot.backArm2.setPower(0);
+                    if(!slide.isBusy() && rateLimit.hasExpired())
+                    {
                         state = "step 5";
                     }
                     break;
@@ -83,33 +87,25 @@ public class TouchTuahThatTHANG extends LinearOpMode {
                     state = "step 7";
                     break;
                 case "step 7":
-                    robot.rotateTo(90,-0.25);
-                    robot.encoderDrive(1,15);
-                    robot.setPower(.25);   
+                    robot.rotateTo(90,-0.35);
+                    robot.encoderDrive(1,7);
+                    robot.setPower(0.5);   
                     state = "step 8";
                     break;
                 case "step 8":  
-                    if(robot.isTouched()){
-                        robot.setPower(0);
-                        robot.encoderDrive(0.5,-3);
-                        robot.rotateTo(175,-0.5); 
-                        Thread.sleep(100);
-                        state = "step 9"; 
-                    }
+                    robot.moveLeft(0.5,15);
+                    state = "step 9";
                     break;
                 case "step 9":
-                    robot.setPower(0.25);
+                    robot.encoderDrive(0.35,5); 
                     state = "step 10";
                     break;
                 case "step 10":
-                    if(robot.isTouched()){
-                        state = "step 11";
-                    }
+                    robot.moveRight(1,12);
+                    state = "step 11";
                     break;
                 case "step 11":
-                    robot.encoderDrive(0.5, -6, -6);
-                    slide.setTargetPosition(850);
-                    Thread.sleep(1000);
+                    robot.moveLeft(1,12);
                     state = "step 12";
                     break;
                 case "step 12": 
@@ -128,7 +124,8 @@ public class TouchTuahThatTHANG extends LinearOpMode {
                     state = "step 15";
                      break;
                 case "step 15":
-                    if(!slide.isBusy()){
+                    if(!slide.isBusy())
+                    {
                         state = "step 16";
                     }
                     break;
@@ -145,7 +142,8 @@ public class TouchTuahThatTHANG extends LinearOpMode {
                     rateLimit.reset();
                     break;
                 case "step 18":
-                    if(!slide.isBusy() && rateLimit.hasExpired()){
+                    if(!slide.isBusy() && rateLimit.hasExpired())
+                    {
                         state = "step 19";
                     }
                     break;
@@ -156,16 +154,14 @@ public class TouchTuahThatTHANG extends LinearOpMode {
                     state = "step 20";
                     break;
                 case "step 20":
-                    robot.moveArm(0);
                     robot.encoderDrive(0.5,-12);
-                    claw.setPower(0);
                     slide.setTargetPosition(0);
                     state = "step 21";
                 case "step 21":
                     robot.moveRight(1, 24);
                     state = "finished";
                     break;
-                }
+            }
             telemetry.addData("heading", robot.getHeading());
             telemetry.addData("Step", state);
             telemetry.update();

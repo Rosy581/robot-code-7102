@@ -14,16 +14,16 @@ import org.firstinspires.ftc.teamcode.hardware.Drive;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Clip that THANG", group = "Robot")
+@Autonomous(name="Just put that THANG in the bag")
 
-public class ClipAuton extends LinearOpMode {
+public class JustPutThatThangInTheBag extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private CRServo claw;
     private DcMotor slide;
     private Drive robot;
     Deadline rateLimit = new Deadline(250, TimeUnit.MILLISECONDS);
 
-    static final double DRIVE_SPEED = 0.5;
+    static final double DRIVE_SPEED = 0.75;
     static final double TURN_SPEED = 0.5;
 
     @Override
@@ -37,67 +37,44 @@ public class ClipAuton extends LinearOpMode {
         slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         YawPitchRollAngles orientation = robot.imu.getRobotYawPitchRollAngles();
-
         telemetry.addData("Yaw (Z)", "%.1f Deg. (Heading)", orientation.getYaw(AngleUnit.DEGREES));
         telemetry.update();
         String state = "Begin";
+
         waitForStart();
         while (opModeIsActive() && state != "finished") {
             switch (state) {
                 case "Begin":
                     claw.setPower(-0.25);
-                    slide.setTargetPosition(2750);
-                    robot.moveArm(450);
+                    robot.encoderDrive(DRIVE_SPEED,8);
+                    robot.rotateTo(130,0.5);
+                    slide.setTargetPosition(3500);
                     slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     slide.setPower(1);
                     state = "step 1";
                     break;
                 case "step 1":
-                    robot.encoderDrive(0.35, 12.0, 12.0);
-                    state = "step 2";
+                    robot.encoderDrive(DRIVE_SPEED/2, 10);  
+                    state = "step 2";                    
                     break;
                 case "step 2":
-                    if (!slide.isBusy()) {
-                        robot.encoderDrive(0.5, -0.75, -0.75);
+                    if(!slide.isBusy()){
+                        claw.setPower(0.25);
+                        Thread.sleep(750);
                         state = "step 3";
                     }
                     break;
                 case "step 3":
-                    slide.setTargetPosition(2250);
+                    robot.encoderDrive(DRIVE_SPEED,-3);
+                    robot.rotateTo(0,-0.5);
+                    robot.encoderDrive(DRIVE_SPEED,12);
                     state = "step 4";
-                    rateLimit.reset();
                     break;
                 case "step 4":
-                    if (!slide.isBusy() && rateLimit.hasExpired()) {
-                        state = "step 5";
-                    }
-                    break;
-                case "step 5":
-                    claw.setPower(1);
-                    robot.encoderDrive(1, -2.0, -2.0);
-                    state = "step 6";
-                    break;
-                case "step 6":
-                    robot.encoderDrive(0.75, -2.3, -2.3);
-                    state = "step 7";
-                    break;
-                case "step 7":
-                    robot.rotateTo(90, -0.25);
-                    robot.encoderDrive(1, 15);
-                    robot.setPower(.25);
-                    state = "step 8";
-                    break;
-                case "step 8":
-                    if (robot.isTouched()) {
-                        robot.setPower(0);
-                        state = "step 9";
-                    }
-                    break;
-                case "step 9":
-                    robot.moveRight(0.5,10); 
-                    state = "finished";  
+                    robot.rotateTo(90,-0.5);
+                    robot.encoderDrive(0.25,10);
                     break;
             }
-        }
+        }    
     }
 }
