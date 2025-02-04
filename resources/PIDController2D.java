@@ -59,8 +59,8 @@ public class PIDController2D {
         lastTime = currentTime;
 
         // Calculate total outputs
-        double outputX = pTermX + iTermX + dTermX;
-        double outputY = pTermY + iTermY + dTermY;
+        double outputX = Math.min(pTermX + iTermX + dTermX ,1);
+        double outputY = Math.min(pTermY + iTermY + dTermY ,1);
         System.out.print("test");
         return new double[]{ -outputX, -outputY}; // Return both outputs
     }
