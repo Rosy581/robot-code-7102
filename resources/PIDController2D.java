@@ -62,7 +62,7 @@ public class PIDController2D {
         double outputX = pTermX + iTermX + dTermX;
         double outputY = pTermY + iTermY + dTermY;
         System.out.print("test");
-        return new double[]{outputX, outputY}; // Return both outputs
+        return new double[]{ -outputX, -outputY}; // Return both outputs
     }
 
     public void reset() {
