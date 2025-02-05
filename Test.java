@@ -57,7 +57,7 @@ public class Test extends LinearOpMode {
             telemetry.addData("Y",outputY);
             telemetry.update();
             Thread.sleep(25);
-            //robot.strafeDrive(outputY,0.0,0.0);
+            robot.strafeDrive(outputX, outputY, 0.0);
         } 
         
         sleep(25000);
