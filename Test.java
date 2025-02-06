@@ -36,11 +36,13 @@ public class Test extends LinearOpMode {
         slide = new Slide(hardwareMap, this);
         robot = new Drive(hardwareMap, this);
         
-        YawPitchRollAngles orientation = robot.imu.getRobotYawPitchRollAngles();
-        myOtos.resetTracking();
+        myOtos.setLinearScalar(1.03125);
+        myOtos.setAngularScalar(1.0);
+        myOtos.setLinearUnit(DistanceUnit.INCH);
+        myOtos.setAngularUnit(AngleUnit.DEGREES);
+        
         myOtos.calibrateImu();
-        telemetry.addData("Yaw (Z)", "%.1f Deg. (Heading)", orientation.getYaw(AngleUnit.DEGREES));
-        telemetry.update();
+        myOtos.resetTracking();
         
         waitForStart();
         while (opModeIsActive()) {

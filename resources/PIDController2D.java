@@ -29,11 +29,23 @@ public class PIDController2D {
 
     public double[] calculate(double currentX, double currentY) {
         long currentTime = System.currentTimeMillis();
+        long entered = 0;
+        boolean ent = false;
         double dt = (currentTime - lastTime) / 1000.0; // Convert milliseconds to seconds
 
         // Calculate errors
         double errorX = setpointX - currentX;
         double errorY = setpointY - currentY;
+
+        if(errorX < 0.5 && errorY < 0.5){
+            if(currentTime - entered > 500 && ent){
+                ent = false;
+                return new double[]{0,0};
+            } else {
+                ent = true;
+                entered = currentTime;
+            }
+        }
 
         // Proportional terms
         double pTermX = kpX * errorX;
@@ -61,7 +73,7 @@ public class PIDController2D {
         // Calculate total outputs
         double outputX = Math.min(pTermX + iTermX + dTermX ,1);
         double outputY = Math.min(pTermY + iTermY + dTermY ,1);
-        System.out.print("test");
+
         return new double[]{ -outputX, -outputY}; // Return both outputs
     }
 
