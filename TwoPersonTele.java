@@ -89,7 +89,16 @@ public class TwoPersonTele extends LinearOpMode {
                 }
                 pos = pos > 1 ? 1 : pos;
                 pos = pos < 0 ? 0 : pos;
-                
+                if(gamepad1.a) {
+                    slide.setTargetPosition(850);
+                    slide.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
+                    slide.setPower(1);
+                }
+                if(gamepad1.b) {
+                    slide.setTargetPosition(2750);
+                    slide.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
+                    slide.setPower(1);
+                }
                 if(gamepad2.dpad_up){
                     pos += 0.01;
                 } else if (gamepad2.dpad_down){
@@ -126,19 +135,19 @@ public class TwoPersonTele extends LinearOpMode {
                 rateLimit.reset();
             }
             
-            if(slide.getMode() == DcMotor.RunMode.RUN_WITHOUT_ENCODER){
-                if(gamepad1.a){
-                    
-                } else if(gamepad1.dpad_up && gamepad1.dpad_down){
-                    slide.setPower(0); 
-                } else if(gamepad1.dpad_up){
-                    slide.setPower(1*slowModeMod*2);
-                } else if(gamepad1.dpad_down){
-                    slide.setPower(-1*slowModeMod*2);
-                } else {
-                    slide.setPower(0);
-                };
+            if(gamepad1.dpad_up && gamepad1.dpad_down){
+                slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                slide.setPower(0); 
+            } else if(gamepad1.dpad_up){
+                slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                slide.setPower(1*slowModeMod*2);
+            } else if(gamepad1.dpad_down){
+                slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                slide.setPower(-1*slowModeMod*2);
+            } else if(!slide.isBusy()){
+                slide.setPower(0);
             }
+
             
             backArm1.setPower(-gamepad2.right_stick_y);
             backArm2.setPower(-gamepad2.right_stick_y);

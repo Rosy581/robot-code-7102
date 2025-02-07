@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -29,12 +30,14 @@ public class Test extends LinearOpMode {
     
     @Override
     public void runOpMode() throws InterruptedException {
-        pidController = new PIDController2D(0.1, 0.01, 0.1, 0.1, 0.01, 0.1);
+        pidController = new PIDController2D(0.1, 0.0, 0.0, 0.1, 0.0, 0.0);
         double targetX, targetY;
         myOtos = hardwareMap.get(SparkFunOTOS.class, "otos");
         claw = hardwareMap.crservo.get("claw");
-        slide = new Slide(hardwareMap, this);
+        //slide = new Slide(hardwareMap, this);
         robot = new Drive(hardwareMap, this);
+        
+        SparkFunOTOS.Pose2D pos = myOtos.getPosition();
         
         myOtos.setLinearScalar(1.03125);
         myOtos.setAngularScalar(1.0);
@@ -44,15 +47,25 @@ public class Test extends LinearOpMode {
         myOtos.calibrateImu();
         myOtos.resetTracking();
         
+        SparkFunOTOS.Pose2D currentPosition = new SparkFunOTOS.Pose2D(0, 0, 0);
+        myOtos.setPosition(currentPosition);
+        
+        telemetry.addData("xPos", pos.x);
+        telemetry.addData("yPos", pos.y);
+        
+        telemetry.update();
+        
         waitForStart();
         while (opModeIsActive()) {
             pidController.setSetpoints(0, 0);
-            SparkFunOTOS.Pose2D pos = myOtos.getPosition();
+            pos = myOtos.getPosition();
             double currentX  = pos.x;
             double currentY  = pos.y;
             double[] outputs = pidController.calculate(currentX, currentY);
             double outputX   = outputs[0];
             double outputY   = outputs[1];
+            //telemetry.addData("Entered",outputs[3]);
+            //telemetry.addData("Entered",outputs[2]);
             telemetry.addData("X",outputX);
             telemetry.addData("xPos", pos.x);
             telemetry.addData("yPos", pos.y);

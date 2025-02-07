@@ -1,6 +1,10 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-public class otos {
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
+public class Otos {
     SparkFunOTOS myOtos;
     SparkFunOTOS.Pose2D offset = new SparkFunOTOS.Pose2D(0, -8.5, 0);
     public void config(double x, double y){
@@ -16,8 +20,8 @@ public class otos {
         
         myOtos.resetTracking();
 
-        Sparkfun.Pose2D startingPos = new SparkFunOTOS.Pose2D(x, y, 0);
+        SparkFunOTOS.Pose2D startingPos = new SparkFunOTOS.Pose2D(x, y, 0);
 
-        myOtos.setPosition(currentPosition);
+        myOtos.setPosition(startingPos);
     }
 }

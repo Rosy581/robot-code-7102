@@ -37,16 +37,6 @@ public class PIDController2D {
         double errorX = setpointX - currentX;
         double errorY = setpointY - currentY;
 
-        if(errorX < 0.5 && errorY < 0.5){
-            if(currentTime - entered > 500 && ent){
-                ent = false;
-                return new double[]{0,0};
-            } else {
-                ent = true;
-                entered = currentTime;
-            }
-        }
-
         // Proportional terms
         double pTermX = kpX * errorX;
         double pTermY = kpY * errorY;
@@ -71,10 +61,15 @@ public class PIDController2D {
         lastTime = currentTime;
 
         // Calculate total outputs
-        double outputX = Math.min(pTermX + iTermX + dTermX ,1);
-        double outputY = Math.min(pTermY + iTermY + dTermY ,1);
+    
+        
+        double outputX = Math.abs(errorX) < 0.75 ? 0 : Math.min(pTermX + iTermX + dTermX ,1);
+        double outputY = Math.abs(errorY) < 0.75 ? 0 : Math.min(pTermY + iTermY + dTermY ,1);
 
-        return new double[]{ -outputX, -outputY}; // Return both outputs
+        outputX = errorX < 2.0 ? Math.min(0.25,outputX) : outputX;
+        outputY = errorY < 2.0 ? Math.min(0.25,outputY) : outputY;
+        
+        return new double[]{ -outputX, -outputY/*, entered, ent1*/}; // Return both outputs
     }
 
     public void reset() {
