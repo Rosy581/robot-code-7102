@@ -30,7 +30,7 @@ public class Test extends LinearOpMode {
     
     @Override
     public void runOpMode() throws InterruptedException {
-        pidController = new PIDController2D(0.1, 0.1, 0, 0.1, 0.1, 0, 0.1, 0.1, 0);
+        pidController = new PIDController2D(0.1, 0.1, 0, 0.1, 0.1, 0, 0.1, 0.1, 0, 1.0);
         double targetX, targetY;
         myOtos = hardwareMap.get(SparkFunOTOS.class, "otos");
         claw = hardwareMap.crservo.get("claw");
@@ -57,7 +57,7 @@ public class Test extends LinearOpMode {
         
         waitForStart();
         while (opModeIsActive()) {
-            pidController.setSetpoints(0,0,90);
+            pidController.setTarget(0,0,90);
             pos = myOtos.getPosition();
             double currentX  = pos.x;
             double currentY  = pos.y;

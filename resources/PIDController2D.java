@@ -11,9 +11,10 @@ public class PIDController2D {
     private long lastTime; // Last time the update was called
 
     public boolean atTarget;
+    public double speedScale;
 
     public PIDController2D(double kpX, double kiX, double kdX, double kpY, double kiY, double kdY,
-                            double kpRotation, double kiRotation, double kdRotation) {
+                            double kpRotation, double kiRotation, double kdRotation, double speedScale) {
         this.kpX = kpX;
         this.kiX = kiX;
         this.kdX = kdX;
@@ -31,9 +32,10 @@ public class PIDController2D {
         this.lastErrorRotation = 0;
         this.lastTime = System.currentTimeMillis();
         this.atTarget = false;
+        this.speedScale = Math.max(Math.abs(speedScale),1);
     }
 
-    public void setSetpoints(double setpointX, double setpointY, double setpointRotation) {
+    public void setTarget(double setpointX, double setpointY, double setpointRotation) {
         this.setpointX = setpointX;
         this.setpointY = setpointY;
         this.setpointRotation = setpointRotation;
@@ -87,7 +89,7 @@ public class PIDController2D {
 
         atTarget = (outputX == 0 && outputY == 0 && outputRotation == 0);
         if(atTarget) reset();
-        return new double[]{-outputX, -outputY, outputRotation}; // Return outputs for X, Y, and Rotation
+        return new double[]{-outputX / speedScale, -outputY / speedScale, outputRotation / speedScale}; // Return outputs for X, Y, and Rotation
     }
 
     public void reset() {

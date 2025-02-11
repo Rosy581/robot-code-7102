@@ -24,7 +24,7 @@ public class ClipTuahAndAnotha extends LinearOpMode {
     @Override
 
     public void runOpMode() throws InterruptedException {
-        pidController = new PIDController2D(0.04, 0.0, 0.0, 0.04, 0.0, 0.0, 0.1, 0.0, 0);
+        pidController = new PIDController2D(0.04, 0.0, 0.0, 0.04, 0.0, 0.0, 0.1, 0.0, 0.0, 4.0);
         double targetX, targetY;
         otos = hardwareMap.get(SparkFunOTOS.class, "otos");
         claw = hardwareMap.crservo.get("claw");
@@ -72,31 +72,54 @@ public class ClipTuahAndAnotha extends LinearOpMode {
             
             switch(stage){
                 case 0:
+                    //grip specimen, move to bar lvl, move backarm back
                     claw.setPower(-0.25);
                     slide.moveTo(2750);
                     robot.moveArm(1000);
-
                     stage++;
                     break;
                 case 1:
+                    //move to sub
                     pidController.setSetpoints(0, 30, 0);
-                    outputX /= 3;
-                    outputY /= 3;
                     if(pidController.atTarget){
                         stage++;
                     }
                     break;
                 case 2:
-                    //move specimen onto bar
+                    //clip specimen onto bar
                     slide.moveTo(2250);
                     if(!slide.isBusy()){
                         stage++;
                     }
+                    break;
                 case 3:
                     //release the specimen
                     claw.setPower(1);
                     Thread.sleep(250);
                     stage++;
+                    break;
+                case 4:
+                    //back up in order not to hit the frame
+                    pidController.setTarget(0, 28, 0);
+                    if(pidController.atTarget){
+                        stage++;
+                    }
+                    break;
+                case 5:
+                    //move to the space between the sub and the samples on the ground
+                    pidController.setTarget(30, 28, 0);
+                    if(pidController.atTarget){
+                        stage++;
+                    }
+                    break;
+                case 6:
+                    // prepare to push samples into observation zone
+                    pidController.setTarget(30, 52, 0);
+                    if(pidController.atTarget){
+                        stage++;
+                    }
+                    break;
+                case 7:
             }            
             robot.strafeDrive(outputX, outputY, outputR);
 
