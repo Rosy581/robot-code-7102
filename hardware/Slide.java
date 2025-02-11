@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 public class Slide {
     private DcMotor slide;
     private LinearOpMode opmode;
+    
     public Slide(HardwareMap hardwareMap, LinearOpMode opmode){
         this.slide = hardwareMap.dcMotor.get("slide");
         slide.setTargetPosition(0);
@@ -22,10 +23,19 @@ public class Slide {
     public boolean isBusy(){
         return slide.isBusy();
     }    
-        
+    
+    public void setSpeed(int speed){
+        slide.setSpeed(speed);
+    }
+
+    public int getPos(){
+        return slide.getCurrentPosition();
+    }
+
     public void moveToBottom(){
         slide.setTargetPosition(0);
     }
+
     public void moveTo(int pos){
         slide.setTargetPosition(pos);
     }
