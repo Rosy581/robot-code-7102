@@ -7,7 +7,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 public class Drive {
     public static final double COUNTS_PER_MOTOR_REV = 1440; // eg: TETRIX Motor Encoder
@@ -16,7 +18,6 @@ public class Drive {
     public static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
     public static final double DRIVE_SPEED = 0.5;
     public static final double TURN_SPEED = 0.5;
-    public boolean hasOtos = false;
     
     public DcMotor frontRightMotor; 
     public DcMotor backRightMotor;
@@ -151,110 +152,62 @@ public class Drive {
         return getHeading(AngleUnit.DEGREES);
     }
 
-    public double getHeading(AngleUnit unit){
+    public double getHeading(AngleUnit unit){   
         return imu.getRobotYawPitchRollAngles().getYaw(unit);
     }
 
-    public void moveRight(double speed, double dist) {
-
-        int newFrontLeftTarget = frontLeftMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH);
-        int newFrontRightTarget = frontRightMotor.getCurrentPosition() + (int) (dist * COUNTS_PER_INCH);
-        int newBackLeftTarget = backLeftMotor.getCurrentPosition() + (int) (dist * COUNTS_PER_INCH);
-        int newBackRightTarget = backRightMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH);
-
-        frontLeftMotor.setTargetPosition(newFrontLeftTarget);
-        frontRightMotor.setTargetPosition(newFrontRightTarget);
-        backLeftMotor.setTargetPosition(newBackLeftTarget);
-        backRightMotor.setTargetPosition(newBackRightTarget);
-
-        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        frontLeftMotor.setPower(Math.abs(speed));
-        frontRightMotor.setPower(Math.abs(speed));
-        backLeftMotor.setPower(Math.abs(speed));
-        backRightMotor.setPower(Math.abs(speed));
-
-        while (opMode.opModeIsActive() &&
-                (frontLeftMotor.isBusy() &&
-                        frontRightMotor.isBusy() &&
-                        backLeftMotor.isBusy() &&
-                        backRightMotor.isBusy())) {
-
-        }
-
-        frontLeftMotor.setPower(0);
-        frontRightMotor.setPower(0);
-        backLeftMotor.setPower(0);
-        backRightMotor.setPower(0);
-
-        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    public void moveLeft(double speed, double dist) {
-
-        int newFrontLeftTarget = frontLeftMotor.getCurrentPosition() + (int) (dist * COUNTS_PER_INCH);
-        int newFrontRightTarget = frontRightMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH);
-        int newBackLeftTarget = backLeftMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH);
-        int newBackRightTarget = backRightMotor.getCurrentPosition() + (int) (dist * COUNTS_PER_INCH);
-
-        frontLeftMotor.setTargetPosition(newFrontLeftTarget);
-        frontRightMotor.setTargetPosition(newFrontRightTarget);
-        backLeftMotor.setTargetPosition(newBackLeftTarget);
-        backRightMotor.setTargetPosition(newBackRightTarget);
-
-        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        frontLeftMotor.setPower(Math.abs(speed));
-        frontRightMotor.setPower(Math.abs(speed));
-        backLeftMotor.setPower(Math.abs(speed));
-        backRightMotor.setPower(Math.abs(speed));
-
-        while (opMode.opModeIsActive() &&
-                (frontLeftMotor.isBusy() &&
-                        frontRightMotor.isBusy() &&
-                        backLeftMotor.isBusy() &&
-                        backRightMotor.isBusy())) {
-
-        }
-
-        frontLeftMotor.setPower(0);
-        frontRightMotor.setPower(0);
-        backLeftMotor.setPower(0);
-        backRightMotor.setPower(0);
-
-        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    public void moveRight(double speed, double dist){
+        moveRight(speed, dist, -1);
     }
     
+    public void moveRight(double speed, double dist, int neg) {
+
+        int newFrontLeftTarget  = frontLeftMotor.getCurrentPosition()  + (int) (dist * COUNTS_PER_INCH) * neg;
+        int newFrontRightTarget = frontRightMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH) * neg;
+        int newBackLeftTarget   = backLeftMotor.getCurrentPosition()   - (int) (dist * COUNTS_PER_INCH) * neg;
+        int newBackRightTarget  = backRightMotor.getCurrentPosition()  + (int) (dist * COUNTS_PER_INCH) * neg;
+
+        frontRightMotor.setTargetPosition(newFrontRightTarget);
+        backLeftMotor.setTargetPosition(newBackLeftTarget);
+        backRightMotor.setTargetPosition(newBackRightTarget);
+
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        frontLeftMotor.setPower(Math.abs(speed));
+        frontRightMotor.setPower(Math.abs(speed));
+        backLeftMotor.setPower(Math.abs(speed));
+        backRightMotor.setPower(Math.abs(speed));
+
+        while (opMode.opModeIsActive() &&
+                (frontLeftMotor.isBusy() &&
+                        frontRightMotor.isBusy() &&
+                        backLeftMotor.isBusy() &&
+                        backRightMotor.isBusy())) {
+
+        }
+
+        frontLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backLeftMotor.setPower(0);
+        backRightMotor.setPower(0);
+
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void moveLeft(double speed, int dist) {
+        moveRight(speed, dist, -1);
+    }
+
     public void encoderDrive(double speed, double dist) {
         encoderDrive(speed,dist,dist);
     }
-    
-    public void strafeDrive(double x, double y, double rx){
-            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            
-            double frontLeftPower  = ((y + x + rx) / denominator);
-            double backLeftPower   = ((y - x + rx) / denominator);
-            double frontRightPower = ((y - x - rx) / denominator);
-            double backRightPower  = ((y + x - rx) / denominator);
 
-            frontLeftMotor.setPower(frontLeftPower);
-            backLeftMotor.setPower(backLeftPower);
-            frontRightMotor.setPower(frontRightPower);
-            backRightMotor.setPower(backRightPower);
-    }
-    
     public void encoderDrive(double speed,
         double leftInches, double rightInches) {
         int newFrontLeftTarget;
@@ -302,7 +255,21 @@ public class Drive {
             backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); 
         }
     }
-    
+        
+    public void strafeDrive(double x, double y, double rx){
+        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+        
+        double frontLeftPower  = ((y + x + rx) / denominator);
+        double backLeftPower   = ((y - x + rx) / denominator);
+        double frontRightPower = ((y - x - rx) / denominator);
+        double backRightPower  = ((y + x - rx) / denominator);
+
+        frontLeftMotor.setPower(frontLeftPower);
+        backLeftMotor.setPower(backLeftPower);
+        frontRightMotor.setPower(frontRightPower);
+        backRightMotor.setPower(backRightPower);
+}
+
     public void setPosition(double x, double y, double r){
         myOtos.setPosition(new SparkFunOTOS.Pose2D(x , y, r));
     }   

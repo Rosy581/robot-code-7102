@@ -118,8 +118,6 @@ public class TwoPersonTele extends LinearOpMode {
                 slideTuah.setPower(1.0);
             }
 
-            
-           
             telemetry.addData("pos",pos);
             telemetry.addData("slideTUAH",slideTuah.getCurrentPosition());
             assServo.setPosition(pos);
@@ -148,7 +146,6 @@ public class TwoPersonTele extends LinearOpMode {
                 slide.setPower(0);
             }
 
-            
             backArm1.setPower(-gamepad2.right_stick_y);
             backArm2.setPower(-gamepad2.right_stick_y);
                 
