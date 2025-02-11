@@ -65,11 +65,11 @@ public class TwoPersonTele extends LinearOpMode {
         clawServo.setDirection(DcMotorSimple.Direction.REVERSE);
         
         
-        double slowModeMod  = 1.0;
-        double pos          = 0.5;
-        boolean slowMode    = false;
-        double targetPos = 0.0;
-        Deadline rateLimit  = new Deadline(250, TimeUnit.MILLISECONDS);
+        double slowModeMod   = 1.0;
+        double pos           = 0.5;
+        boolean slowMode     = false;
+        double targetPos     = 0.0;
+        Deadline rateLimit   = new Deadline(250, TimeUnit.MILLISECONDS);
         Deadline rateLimit2  = new Deadline(250, TimeUnit.MILLISECONDS);
         
         waitForStart();
