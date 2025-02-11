@@ -78,7 +78,7 @@ public class TwoPersonTele extends LinearOpMode {
 
         while (opModeIsActive()) {
             double y  =  gamepad1.left_stick_y;
-            double x  =  -gamepad1.left_stick_x /** 1.1*/;
+            double x  =  -gamepad1.left_stick_x * 1.1;
             double rx =  -gamepad1.right_stick_x;
             if(backArm1.getCurrentPosition() < -1600){
                 slideTuah.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
