@@ -16,6 +16,7 @@ public class Drive {
     public static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
     public static final double DRIVE_SPEED = 0.5;
     public static final double TURN_SPEED = 0.5;
+    public boolean hasOtos = false;
     
     public DcMotor frontRightMotor; 
     public DcMotor backRightMotor;
@@ -26,6 +27,8 @@ public class Drive {
     private LinearOpMode opMode;
     public DigitalChannel touchSensor;
     public IMU imu;
+    public SparkFunOTOS myOtos;
+    private SparkFunOTOS.Pose2D offset = new SparkFunOTOS.Pose2D(0, -8.5, 0);
     
     public Drive(HardwareMap hardwareMap,LinearOpMode opMode) {
         this.frontLeftMotor = hardwareMap.dcMotor.get("leftFront");
@@ -37,6 +40,15 @@ public class Drive {
         this.imu = hardwareMap.get(IMU.class, "imu");
         this.opMode = opMode;
         this.touchSensor = hardwareMap.get(DigitalChannel.class, "touchMe");
+        this.myOtos = hardwareMap.get(SparkFunOTOS.class, "otos");
+
+        myOtos.setLinearUnit(DistanceUnit.INCH);
+        myOtos.setAngularUnit(AngleUnit.DEGREES);
+        myOtos.setOffset(offset);
+        myOtos.setLinearScalar(1.03125);
+        myOtos.setAngularScalar(1.00416666667);
+        myOtos.calibrateImu();
+        myOtos.resetTracking();
 
         touchSensor.setMode(DigitalChannel.Mode.INPUT);
 
@@ -113,15 +125,15 @@ public class Drive {
         backArm2.setPower(1);
         }
 
-    public void setPower(double n1, double n2){
-        setPower(n1,n2,n1,n2);
-    }
-    
     public void setPower(double n) throws InterruptedException {
         setPower(n,n,n,n);
         if(n == 0){
             Thread.sleep(100);
         }
+    }
+
+    public void setPower(double n1, double n2){
+        setPower(n1,n2,n1,n2);
     }
     
     public void setPower(double n1, double n2, double n3, double n4){
@@ -289,5 +301,17 @@ public class Drive {
             backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); 
         }
+    }
+    
+    public void setPosition(double x, double y, double r){
+        myOtos.setPosition(new SparkFunOTOS.Pose2D(x , y, r));
+    }   
+
+    public void setPosition(double x, double y){
+        setPosition(x, y, 0);
+    }
+    
+    public void resetOtos(){
+        myOtos.resetTracking();
     }
 } 
