@@ -157,7 +157,7 @@ public class Drive {
     }
 
     public void moveRight(double speed, double dist){
-        moveRight(speed, dist, -1);
+        moveRight(speed, dist, 1);
     }
     
     public void moveRight(double speed, double dist, int neg) {
@@ -270,9 +270,37 @@ public class Drive {
         backRightMotor.setPower(backRightPower);
 }
 
+    public void fieldDrive(double x, double y, double rx){
+        double botHeading = getHeading();
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+
+        rotX = rotX * 1.1; 
+
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+        double frontLeftPower = (rotY + rotX + rx) / denominator;
+        double backLeftPower = (rotY - rotX + rx) / denominator;
+        double frontRightPower = (rotY - rotX - rx) / denominator;
+        double backRightPower = (rotY + rotX - rx) / denominator;
+
+        frontLeftMotor.setPower(frontLeftPower);
+        backLeftMotor.setPower(backLeftPower);
+        frontRightMotor.setPower(frontRightPower);
+        backRightMotor.setPower(backRightPower);
+    }
+
+    public double[] getPositionArray(){
+        SparkFunOTOS.Pose2D pos = myOtos.getPosition(); 
+        return new double[]{pos.x, pos.y, pos.h};
+    }
+
+    public SparkFunOTOS.Pose2D getPosition(){
+        return myOtos.getPosition(); 
+    }
+
     public void setPosition(double x, double y, double r){
         myOtos.setPosition(new SparkFunOTOS.Pose2D(x , y, r));
-    }   
+    }    
 
     public void setPosition(double x, double y){
         setPosition(x, y, 0);

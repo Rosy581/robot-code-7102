@@ -17,30 +17,20 @@ public class ClipTuahAndAnotha extends LinearOpMode {
 
     private CRServo claw;
     private SparkFunOTOS otos;
-    private Drive robot;
+    private hardware.Drive robot;
     private Slide slide;
-    private PIDController2D pidController;
+    private resources.PIDController2D pidController;
     
     @Override
 
     public void runOpMode() throws InterruptedException {
-        pidController = new PIDController2D(0.04, 0.0, 0.0, 0.04, 0.0, 0.0, 0.1, 0.0, 0.0, 4.0);
+        pidController = new PIDController2D(0.04, 0.0, 0.0, 0.04, 0.0, 0.0, 0.1, 0.0, 0.0, 3.0);
         double targetX, targetY;
-        otos = hardwareMap.get(SparkFunOTOS.class, "otos");
         claw = hardwareMap.crservo.get("claw");
         slide = new Slide(hardwareMap, this);
         robot = new Drive(hardwareMap, this);
-        
-        otos.setLinearUnit(DistanceUnit.INCH);
-        otos.setAngularUnit(AngleUnit.DEGREES);
-        otos.setOffset(new SparkFunOTOS.Pose2D (0.0, -8.5, 0.0));
-        otos.setLinearScalar(1.03125);
-        otos.setAngularScalar(1.00416666667);
-        otos.calibrateImu();
-        otos.resetTracking();
-        otos.setPosition(new SparkFunOTOS.Pose2D(0,0,0));
-        
-        SparkFunOTOS.Pose2D pos = otos.getPosition();
+
+        SparkFunOTOS.Pose2D pos = robot.getPosition();
         
         telemetry.addData("xPos", pos.x);
         telemetry.addData("x",0);
@@ -100,29 +90,61 @@ public class ClipTuahAndAnotha extends LinearOpMode {
                     break;
                 case 4:
                     //back up in order not to hit the frame
-                    pidController.setTarget(0, 28, 0);
+                    pidController.setTarget(0, 27, 0);
                     if(pidController.atTarget){
                         stage++;
                     }
                     break;
                 case 5:
                     //move to the space between the sub and the samples on the ground
+                    pidController.setSpeedScale(2);
                     pidController.setTarget(30, 28, 0);
                     if(pidController.atTarget){
                         stage++;
                     }
                     break;
                 case 6:
-                    // prepare to push samples into observation zone
+                    //prepare to push sample(s) into observation zone
                     pidController.setTarget(30, 52, 0);
                     if(pidController.atTarget){
                         stage++;
                     }
                     break;
                 case 7:
-            }            
-            robot.strafeDrive(outputX, outputY, outputR);
-
+                    //move over to the sample
+                    pidController.setTarget(58, 52, 0);
+                    if(pidController.atTarget){
+                        stage++;
+                    }
+                    break;
+                case 8:
+                    //push first sample
+                    pidController.setTarget(58, 4, 0);    
+                    if(pidController.atTarget){
+                        stage++;
+                    }
+                    break;
+                case 9: 
+                    //get out so human can grab sample
+                    pidController.setTarget(58, 28, 180);
+                    if(pidController.atTarget){
+                        stage++;
+                    }
+                    break;
+                case 10:
+                    //move slide to the right level and turn around
+                    slide.moveTo(850);
+                    robot.rotateTo(180);
+                case 11:
+                    //go to the wall SLOWLY
+                    pidController.setSpeedScale(4);
+                    pidController.setTarget(58, 1, 180);
+                    if(pidController.atTarget){
+                        stage++;
+                    }
+                    break;
+            }         
+            robot.fieldDrive(outputX, outputY, outputR);
             Thread.sleep(12);
         }
     }    
