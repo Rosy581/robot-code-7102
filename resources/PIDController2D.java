@@ -39,6 +39,7 @@ public class PIDController2D {
         this.setpointX = setpointX;
         this.setpointY = setpointY;
         this.setpointR = setpointR;
+        reset();
     }
 
     public double[] calculate(double currentX, double currentY, double currentR) {
@@ -104,5 +105,6 @@ public class PIDController2D {
         lastErrorY = 0;
         lastErrorR = 0;
         lastTime = System.currentTimeMillis();
+        atTarget = false;
     }
 }
