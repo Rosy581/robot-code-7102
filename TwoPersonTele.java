@@ -65,11 +65,11 @@ public class TwoPersonTele extends LinearOpMode {
         clawServo.setDirection(DcMotorSimple.Direction.REVERSE);
         
         
-        double slowModeMod   = 1.0;
-        double pos           = 0.5;
-        boolean slowMode     = false;
-        double targetPos     = 0.0;
-        Deadline rateLimit   = new Deadline(250, TimeUnit.MILLISECONDS);
+        double slowModeMod  = 1.0;
+        double pos          = 0.5;
+        boolean slowMode    = false;
+        double targetPos = 0.0;
+        Deadline rateLimit  = new Deadline(250, TimeUnit.MILLISECONDS);
         Deadline rateLimit2  = new Deadline(250, TimeUnit.MILLISECONDS);
         
         waitForStart();
@@ -118,6 +118,8 @@ public class TwoPersonTele extends LinearOpMode {
                 slideTuah.setPower(1.0);
             }
 
+            
+           
             telemetry.addData("pos",pos);
             telemetry.addData("slideTUAH",slideTuah.getCurrentPosition());
             assServo.setPosition(pos);
@@ -136,7 +138,7 @@ public class TwoPersonTele extends LinearOpMode {
             if(gamepad1.dpad_up && gamepad1.dpad_down){
                 slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 slide.setPower(0); 
-            } else if(gamepad1.dpad_up){
+            } else if(gamepad1.dpad_up && slide.getCurrentPosition() < 3250){
                 slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 slide.setPower(1*slowModeMod*2);
             } else if(gamepad1.dpad_down){
@@ -146,6 +148,7 @@ public class TwoPersonTele extends LinearOpMode {
                 slide.setPower(0);
             }
 
+            
             backArm1.setPower(-gamepad2.right_stick_y);
             backArm2.setPower(-gamepad2.right_stick_y);
                 

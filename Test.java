@@ -57,25 +57,25 @@ public class Test extends LinearOpMode {
         
         waitForStart();
         while (opModeIsActive()) {
-            pidController.setTarget(0,0,90);
+            pidController.setTarget(12,0,0);
             pos = myOtos.getPosition();
             double currentX  = pos.x;
             double currentY  = pos.y;
             double currentR  = pos.h;
-            double[] outputs = pidController.calculate(currentX, currentY, currentR);
+            double[] outputs = pidController.calculate(currentX, currentY);
             double outputX   = outputs[0];
             double outputY   = outputs[1];
-            double outputR   = outputs[2];
+            //double outputR   = outputs[2];
             
             telemetry.addData("xPos", pos.x);
             telemetry.addData("X",outputX);
             telemetry.addData("yPos", pos.y);
             telemetry.addData("Y",outputY);
             telemetry.addData("rPos", pos.h);
-            telemetry.addData("r",outputR);
+            //telemetry.addData("r",outputR);
             
             telemetry.update();
-            robot.strafeDrive(outputX, outputY, outputR);
+            robot.strafeDrive(outputY, outputX, 0);
             Thread.sleep(12);
         } 
         

@@ -17,14 +17,14 @@ public class ClipTuahAndAnotha extends LinearOpMode {
 
     private CRServo claw;
     private SparkFunOTOS otos;
-    private hardware.Drive robot;
+    private Drive robot;
     private Slide slide;
-    private resources.PIDController2D pidController;
+    private PIDController2D pidController;
     
     @Override
 
     public void runOpMode() throws InterruptedException {
-        pidController = new PIDController2D(0.04, 0.0, 0.0, 0.04, 0.0, 0.0, 0.1, 0.0, 0.0, 3.0);
+        pidController = new PIDController2D(0.04, 0.1, 0.0, 0.04, 0.0, 0.0, 0.1, 0.0, 0.0, 1.5);
         double targetX, targetY;
         claw = hardwareMap.crservo.get("claw");
         slide = new Slide(hardwareMap, this);
@@ -45,21 +45,6 @@ public class ClipTuahAndAnotha extends LinearOpMode {
         waitForStart();
         while(opModeIsActive()){
 
-            pos = otos.getPosition();
-            double currentX  = pos.x;
-            double currentY  = pos.y;
-            double currentR  = pos.h;
-
-            double[] outputs = pidController.calculate(currentX, currentY, currentR);
-            double outputX   = outputs[0];
-            double outputY   = outputs[1];
-            double outputR   = outputs[2];
-            telemetry.addData("xPos", pos.x);
-            telemetry.addData("X",outputX);
-            telemetry.addData("yPos", pos.y);
-            telemetry.addData("Y",outputY);
-            telemetry.update();
-            
             switch(stage){
                 case 0:
                     //grip specimen, move to bar lvl, move backarm back
@@ -70,8 +55,8 @@ public class ClipTuahAndAnotha extends LinearOpMode {
                     break;
                 case 1:
                     //move to sub
-                    pidController.setSetpoints(0, 30, 0);
-                    if(pidController.atTarget){
+                    pidController.setTarget(0, 30, 0);
+                    if(pidController.atTarget && !slide.isBusy()){
                         stage++;
                     }
                     break;
@@ -90,7 +75,7 @@ public class ClipTuahAndAnotha extends LinearOpMode {
                     break;
                 case 4:
                     //back up in order not to hit the frame
-                    pidController.setTarget(0, 27, 0);
+                    pidController.setTarget(0, 26, 0);
                     if(pidController.atTarget){
                         stage++;
                     }
@@ -98,9 +83,11 @@ public class ClipTuahAndAnotha extends LinearOpMode {
                 case 5:
                     //move to the space between the sub and the samples on the ground
                     pidController.setSpeedScale(2);
-                    pidController.setTarget(30, 28, 0);
+                    pidController.setTarget(30, 26, 0);
                     if(pidController.atTarget){
                         stage++;
+                        robot.strafeDrive(0,0,0);
+                        Thread.sleep(100);
                     }
                     break;
                 case 6:
@@ -108,12 +95,17 @@ public class ClipTuahAndAnotha extends LinearOpMode {
                     pidController.setTarget(30, 52, 0);
                     if(pidController.atTarget){
                         stage++;
+                        Thread.sleep(100);
                     }
                     break;
                 case 7:
                     //move over to the sample
                     pidController.setTarget(58, 52, 0);
                     if(pidController.atTarget){
+                        //Right here theres an issue where it doesn't move to the left it just moves traight back
+                        //it is likely an issue with the atTarget Var because it gets reset at the end of the loop 
+                        //switching it to the end might help
+                        Thread.sleep(10000);
                         stage++;
                     }
                     break;
@@ -143,8 +135,25 @@ public class ClipTuahAndAnotha extends LinearOpMode {
                         stage++;
                     }
                     break;
-            }         
-            robot.fieldDrive(outputX, outputY, outputR);
+            }
+
+            pos = robot.getPosition();
+            double currentX  = pos.x;
+            double currentY  = pos.y;
+            double currentR  = pos.h;
+
+            double[] outputs = pidController.calculate(currentX, currentY);
+            double outputX   = outputs[0];
+            double outputY   = outputs[1];
+            //double outputR   = outputs[2];
+            telemetry.addData("xPos", pos.x);
+            telemetry.addData("X",outputX);
+            telemetry.addData("yPos", pos.y);
+            telemetry.addData("Y",outputY);
+            telemetry.addData("stage",stage);
+            telemetry.update();
+            
+            robot.strafeDrive(outputX, outputY, 0);
             Thread.sleep(12);
         }
     }    
