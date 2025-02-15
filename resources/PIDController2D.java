@@ -35,11 +35,10 @@ public class PIDController2D {
         this.speedScale = Math.max(Math.abs(speedScale),1);
     }
 
-    public void setTarget(double setpointX, double setpointY, double setpointR) {
-        this.setpointX = setpointX;
-        this.setpointY = setpointY;
-        this.setpointR = setpointR;
-        reset();
+    public void setTarget(double newPointX, double newPointY, double newPointR) {
+        setpointX = newPointX;
+        setpointY = newPointY;
+        setpointR = newPointR;
     }
 
     public double[] calculate(double currentX, double currentY, double currentR) {
@@ -77,7 +76,7 @@ public class PIDController2D {
         // Save errors and time for next calculation
         lastErrorX = errorX;
         lastErrorY = errorY;
-        lastErrorR = errorR;
+        //lastErrorR = errorR;
         lastTime = currentTime;
 
         // Calculate total outputs
@@ -87,10 +86,18 @@ public class PIDController2D {
 
         outputX = errorX < 2.0 ? Math.min(0.25, outputX) : outputX;
         outputY = errorY < 2.0 ? Math.min(0.25, outputY) : outputY;
-
+        
+        outputX = errorX < -2.0 ? Math.max(-0.25, outputX) : outputX;
+        outputY = errorY < -2.0 ? Math.max(-0.25, outputY) : outputY;
+        
+        outputX = Math.abs(errorX) < 10.0 && Math.abs(errorX) > 6 ? outputX : outputX / speedScale;
+        outputY = Math.abs(errorY) < 10.0 && Math.abs(errorX) > 6 ? outputY : outputY / speedScale;
+        
+        //outputX = outputX > 0 ? Math.max(0.25,outputX) : Math.min(-0.25,outputX); 
+        
         atTarget = (outputX == 0 && outputY == 0 && outputR == 0);
         if(atTarget) reset();
-        return new double[]{-outputX / speedScale, -outputY / speedScale, outputR / speedScale};
+        return new double[]{-outputX, -outputY, outputR};
     }
 
     public void setSpeedScale(double speed){
@@ -100,11 +107,10 @@ public class PIDController2D {
     public void reset() {
         integralX = 0;
         integralY = 0;
-        integralR = 0;
+        //integralR = 0;
         lastErrorX = 0;
         lastErrorY = 0;
-        lastErrorR = 0;
+        //lastErrorR = 0;
         lastTime = System.currentTimeMillis();
-        atTarget = false;
     }
 }

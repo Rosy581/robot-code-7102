@@ -16,6 +16,7 @@ public class Slide {
         slide.setDirection(DcMotorSimple.Direction.REVERSE);
         slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slide.setPower(1);
         this.opmode = opmode;
     }
@@ -25,7 +26,7 @@ public class Slide {
     }    
     
     public void setSpeed(int speed){
-        slide.setSpeed(speed);
+        slide.setPower(speed);
     }
 
     public int getPos(){

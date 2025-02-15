@@ -259,6 +259,11 @@ public class Drive {
     public void strafeDrive(double x, double y, double rx){
         double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
         
+        if(rx > 0.5){
+            x = 0;
+            y = 0;
+        }
+        
         double frontLeftPower  = ((y + x + rx) / denominator);
         double backLeftPower   = ((y - x + rx) / denominator);
         double frontRightPower = ((y - x - rx) / denominator);
@@ -271,7 +276,7 @@ public class Drive {
 }
 
     public void fieldDrive(double x, double y, double rx){
-        double botHeading = getHeading();
+        double botHeading = getPosition().h;
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
         double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 
