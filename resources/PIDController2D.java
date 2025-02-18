@@ -39,6 +39,7 @@ public class PIDController2D {
         setpointX = newPointX;
         setpointY = newPointY;
         setpointR = newPointR;
+        reset();
     }
 
     public double[] calculate(double currentX, double currentY, double currentR) {
@@ -84,23 +85,23 @@ public class PIDController2D {
         double outputY = Math.abs(errorY) < 0.75 ? 0 : Math.min(pTermY + iTermY + dTermY, 1);
         double outputR = Math.abs(errorR) < 1.0  ? 0 : Math.min(pTermR + iTermR + dTermR, 1);
 
-        outputX = errorX < 2.0 ? Math.min(0.25, outputX) : outputX;
-        outputY = errorY < 2.0 ? Math.min(0.25, outputY) : outputY;
+        outputX = errorX < 2.0 ? Math.min(0.2, outputX) : outputX;
+        outputY = errorY < 2.0 ? Math.min(0.2, outputY) : outputY;
         
-        outputX = errorX < -2.0 ? Math.max(-0.25, outputX) : outputX;
-        outputY = errorY < -2.0 ? Math.max(-0.25, outputY) : outputY;
+        outputX = errorX < -2.0 ? Math.max(-0.2, outputX) : outputX;
+        outputY = errorY < -2.0 ? Math.max(-0.2, outputY) : outputY;
         
         outputX = Math.abs(errorX) < 10.0 && Math.abs(errorX) > 6 ? outputX : outputX / speedScale;
         outputY = Math.abs(errorY) < 10.0 && Math.abs(errorX) > 6 ? outputY : outputY / speedScale;
         
-        //outputX = outputX > 0 ? Math.max(0.25,outputX) : Math.min(-0.25,outputX); 
+        outputR = (setpointR == 180 && Math.abs(currentR)-180.0 < 1.0)? 0 : outputR;
         
         atTarget = (outputX == 0 && outputY == 0 && outputR == 0);
         if(atTarget) reset();
-        return new double[]{-outputX, -outputY, outputR};
+        return new double[]{-outputX, -outputY, outputR, setpointX, setpointY, setpointR};
     }
 
-    public void setSpeedScale(double speed){
+    public void setSpeed(double speed){
         speedScale = speed;
     }
 

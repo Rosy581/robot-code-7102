@@ -46,7 +46,7 @@ public class Test extends LinearOpMode {
         
         waitForStart();
         while (opModeIsActive()) {
-            pidController.setTarget(0,0,90);
+            pidController.setTarget(0,- 6,0);
             pos = myOtos.getPosition();
             double currentX  = pos.x;
             double currentY  = pos.y;

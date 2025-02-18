@@ -84,37 +84,30 @@ public class TwoPersonTele extends LinearOpMode {
                 slideTuah.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 if(slideTuah.getCurrentPosition() > -3100) {
                     slideTuah.setPower(gamepad2.left_stick_y);
+                } else if(slideTuah.getCurrentPosition() > -20){
+                    slideTuah.setPower(gamepad2.left_stick_y < 0 ? gamepad2.left_stick_y : 0);
                 } else {
                     slideTuah.setPower(gamepad2.left_stick_y > 0 ? gamepad2.left_stick_y : 0);
                 }
                 pos = pos > 1 ? 1 : pos;
                 pos = pos < 0 ? 0 : pos;
-                if(gamepad1.a) {
-                    slide.setTargetPosition(850);
-                    slide.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-                    slide.setPower(1);
-                }
-                if(gamepad1.b) {
-                    slide.setTargetPosition(2750);
-                    slide.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-                    slide.setPower(1);
-                }
+
                 if(gamepad2.dpad_up){
                     pos += 0.01;
                 } else if (gamepad2.dpad_down){
                     pos -= 0.01;
                 }
                 if(gamepad2.a){
-                    clawTuah.setPosition(1);
+                    clawTuah.setPosition(0.5);
                 } else {
-                    clawTuah.setPosition(0);
+                    clawTuah.setPosition(0.8);
                 }
                 
             } else {
                 slideTuah.setTargetPosition(10);
-                clawTuah.setPosition(0.5);
+                clawTuah.setPosition(0.75);
                 slideTuah.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-                pos = 0.3;
+                pos = 0.72;
                 slideTuah.setPower(1.0);
             }
 
@@ -123,7 +116,18 @@ public class TwoPersonTele extends LinearOpMode {
             telemetry.addData("pos",pos);
             telemetry.addData("slideTUAH",slideTuah.getCurrentPosition());
             assServo.setPosition(pos);
+            if(gamepad1.a) {
+                slide.setTargetPosition(850);
+                slide.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
+                slide.setPower(1);
+            }
             
+            if(gamepad1.b) {
+                slide.setTargetPosition(2750);
+                slide.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
+                slide.setPower(1);
+            }
+                
             if(rateLimit.hasExpired() && (gamepad1.x || gamepad2.x)){
                 if(slowModeMod == 1){
                     slowModeMod = 0.25;
@@ -138,7 +142,7 @@ public class TwoPersonTele extends LinearOpMode {
             if(gamepad1.dpad_up && gamepad1.dpad_down){
                 slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 slide.setPower(0); 
-            } else if(gamepad1.dpad_up && slide.getCurrentPosition() < 3250){
+            } else if(gamepad1.dpad_up /*&& slide.getCurrentPosition() < 3250*/){
                 slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 slide.setPower(1*slowModeMod*2);
             } else if(gamepad1.dpad_down){

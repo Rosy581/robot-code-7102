@@ -46,7 +46,7 @@ public class Drive {
         myOtos.setLinearUnit(DistanceUnit.INCH);
         myOtos.setAngularUnit(AngleUnit.DEGREES);
         myOtos.setOffset(offset);
-        myOtos.setLinearScalar(1.03125);
+        myOtos.setLinearScalar(1.0);
         myOtos.setAngularScalar(1.00416666667);
         myOtos.calibrateImu();
         myOtos.resetTracking();
@@ -155,18 +155,15 @@ public class Drive {
     public double getHeading(AngleUnit unit){   
         return imu.getRobotYawPitchRollAngles().getYaw(unit);
     }
-
-    public void moveRight(double speed, double dist){
-        moveRight(speed, dist, 1);
-    }
     
-    public void moveRight(double speed, double dist, int neg) {
+    public void moveRight(double speed, double dist) {
 
-        int newFrontLeftTarget  = frontLeftMotor.getCurrentPosition()  + (int) (dist * COUNTS_PER_INCH) * neg;
-        int newFrontRightTarget = frontRightMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH) * neg;
-        int newBackLeftTarget   = backLeftMotor.getCurrentPosition()   - (int) (dist * COUNTS_PER_INCH) * neg;
-        int newBackRightTarget  = backRightMotor.getCurrentPosition()  + (int) (dist * COUNTS_PER_INCH) * neg;
+        int newFrontLeftTarget  = frontLeftMotor.getCurrentPosition()  - (int) (dist * COUNTS_PER_INCH);
+        int newFrontRightTarget = frontRightMotor.getCurrentPosition() + (int) (dist * COUNTS_PER_INCH);
+        int newBackLeftTarget   = backLeftMotor.getCurrentPosition()   + (int) (dist * COUNTS_PER_INCH);
+        int newBackRightTarget  = backRightMotor.getCurrentPosition()  - (int) (dist * COUNTS_PER_INCH);
 
+        frontLeftMotor.setTargetPosition(newFrontLeftTarget);
         frontRightMotor.setTargetPosition(newFrontRightTarget);
         backLeftMotor.setTargetPosition(newBackLeftTarget);
         backRightMotor.setTargetPosition(newBackRightTarget);
@@ -200,8 +197,45 @@ public class Drive {
         backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void moveLeft(double speed, int dist) {
-        moveRight(speed, dist, -1);
+    public void moveLeft(double speed, double dist) {
+
+        int newFrontLeftTarget = frontLeftMotor.getCurrentPosition() + (int) (dist * COUNTS_PER_INCH);
+        int newFrontRightTarget = frontRightMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH);
+        int newBackLeftTarget = backLeftMotor.getCurrentPosition() - (int) (dist * COUNTS_PER_INCH);
+        int newBackRightTarget = backRightMotor.getCurrentPosition() + (int) (dist * COUNTS_PER_INCH);
+
+        frontLeftMotor.setTargetPosition(newFrontLeftTarget);
+        frontRightMotor.setTargetPosition(newFrontRightTarget);
+        backLeftMotor.setTargetPosition(newBackLeftTarget);
+        backRightMotor.setTargetPosition(newBackRightTarget);
+
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        frontLeftMotor.setPower(Math.abs(speed));
+        frontRightMotor.setPower(Math.abs(speed));
+        backLeftMotor.setPower(Math.abs(speed));
+        backRightMotor.setPower(Math.abs(speed));
+
+        while (opMode.opModeIsActive() &&
+                (frontLeftMotor.isBusy() &&
+                        frontRightMotor.isBusy() &&
+                        backLeftMotor.isBusy() &&
+                        backRightMotor.isBusy())) {
+
+        }
+
+        frontLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backLeftMotor.setPower(0);
+        backRightMotor.setPower(0);
+
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void encoderDrive(double speed, double dist) {
@@ -254,6 +288,14 @@ public class Drive {
             backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); 
         }
+    }
+
+    public void stop(){
+        strafeDrive(0,0,0);    
+    }
+    
+    public void strafeDrive(double x, double y){
+        strafeDrive(x,y,0);
     }
         
     public void strafeDrive(double x, double y, double rx){

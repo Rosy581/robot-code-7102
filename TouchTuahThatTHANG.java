@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.io.IOException;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -12,10 +15,13 @@ import org.firstinspires.ftc.teamcode.hardware.Slide;
 import org.firstinspires.ftc.teamcode.hardware.Drive;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
+import java.util.logging.SimpleFormatter;
 
 @Autonomous(name = "Clip Tuah that THANG (touching edition)", group = "Robot")
 
 public class TouchTuahThatTHANG extends LinearOpMode {
+    private static final Logger logger = Logger.getLogger(TouchTuahThatTHANG.class.getName());
     private ElapsedTime runtime = new ElapsedTime();
     private CRServo claw;
     private DcMotor slide;
@@ -27,6 +33,16 @@ public class TouchTuahThatTHANG extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        try{
+            FileHandler fh = new FileHandler("/logs/LOG.txt",true);
+            SimpleFormatter format = new SimpleFormatter();
+            fh.setFormatter(format);
+            logger.addHandler(fh);
+            logger.setLevel(Level.ALL);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
         claw = hardwareMap.crservo.get("claw");
         slide = hardwareMap.dcMotor.get("slide");
         robot = new Drive(hardwareMap, this);
@@ -44,6 +60,7 @@ public class TouchTuahThatTHANG extends LinearOpMode {
         while (opModeIsActive() && state != "finished") {
             switch(state){
                 case "Begin":  
+                    logger.info("Started");
                     claw.setPower(-0.25);
                     slide.setTargetPosition(2750);
                     robot.moveArm(1000);
@@ -107,24 +124,24 @@ public class TouchTuahThatTHANG extends LinearOpMode {
                     }
                     break;
                 case "step 11":
-                    robot.encoderDrive(0.5, -6, -6);
+                    robot.encoderDrive(0.75, -6, -6);
                     slide.setTargetPosition(850);
-                    Thread.sleep(1000);
+                    Thread.sleep(750);
                     state = "step 12";
                     break;
                 case "step 12": 
-                    robot.encoderDrive(0.25, 5.75, 5.75); 
+                    robot.encoderDrive(0.75, 6); 
                     claw.setPower(-0.25);
-                    Thread.sleep(400);
+                    Thread.sleep(300);
                     state = "step 13";
                     break;
                 case "step 13":
                     slide.setTargetPosition(2750);
-                    robot.encoderDrive(1,-6);
+                    robot.encoderDrive(1,-4.5);
                     state = "step 14";
-                    break;
+                    break; 
                 case "step 14":
-                    robot.moveRight(DRIVE_SPEED,12);
+                    robot.moveRight(0.75,12);
                     state = "step 15";
                      break;
                 case "step 15":
@@ -135,7 +152,7 @@ public class TouchTuahThatTHANG extends LinearOpMode {
                 case "step 16":
                     robot.rotateTo(0,0.5);
                     robot.moveLeft(0.5,12);
-                    robot.encoderDrive(0.25,5);
+                    robot.encoderDrive(0.25, 5);
                     robot.encoderDrive(0.5, -0.75);
                     state = "step 17";
                     break;
@@ -151,7 +168,6 @@ public class TouchTuahThatTHANG extends LinearOpMode {
                     break;
                 case "step 19":
                     claw.setPower(1);
-                    Thread.sleep(125);
                     robot.encoderDrive(1,-2.0);
                     state = "step 20";
                     break;
@@ -162,7 +178,7 @@ public class TouchTuahThatTHANG extends LinearOpMode {
                     slide.setTargetPosition(0);
                     state = "step 21";
                 case "step 21":
-                    robot.moveRight(1, 24);
+                    robot.moveRight(100, 3000);
                     state = "finished";
                     break;
                 }
