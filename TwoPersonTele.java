@@ -23,6 +23,7 @@ public class TwoPersonTele extends LinearOpMode {
     private CRServo clawServo;   
     private Servo assServo;
     private Servo clawTuah;
+    private Servo freakWrist;
     private GP lastGp = new GP();
  
     @Override
@@ -36,10 +37,11 @@ public class TwoPersonTele extends LinearOpMode {
         backArm1 = hardwareMap.dcMotor.get("backArm1");
         backArm2 = hardwareMap.dcMotor.get("backArm2");
         slide = hardwareMap.dcMotor.get("slide");
-        slideTuah = hardwareMap.dcMotor.get("slideTuah");
-        clawServo = hardwareMap.crservo.get("claw");
-        assServo  = hardwareMap.servo.get("assClaw");
-        clawTuah  = hardwareMap.servo.get("clawTuah");
+        slideTuah  = hardwareMap.dcMotor.get("slideTuah");
+        clawServo  = hardwareMap.crservo.get("claw");
+        assServo   = hardwareMap.servo.get("assClaw");
+        clawTuah   = hardwareMap.servo.get("clawTuah");
+        freakWrist = hardwareMap.servo.get("freakWrist");
         
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -67,6 +69,7 @@ public class TwoPersonTele extends LinearOpMode {
         
         double slowModeMod  = 1.0;
         double pos          = 0.5;
+        double pos2uh       = 0.5;
         boolean slowMode    = false;
         double targetPos = 0.0;
         Deadline rateLimit  = new Deadline(250, TimeUnit.MILLISECONDS);
@@ -89,33 +92,40 @@ public class TwoPersonTele extends LinearOpMode {
                 } else {
                     slideTuah.setPower(gamepad2.left_stick_y > 0 ? gamepad2.left_stick_y : 0);
                 }
-                pos = pos > 1 ? 1 : pos;
+                pos = pos > 0.5 ? 0.5 : pos;
                 pos = pos < 0 ? 0 : pos;
+
+                pos2uh = pos2uh > 1 ? 1 : pos2uh;
+                pos2uh = pos2uh < 0 ? 0 : pos2uh;
 
                 if(gamepad2.dpad_up){
                     pos += 0.01;
                 } else if (gamepad2.dpad_down){
                     pos -= 0.01;
                 }
-                if(gamepad2.a){
-                    clawTuah.setPosition(0.5);
-                } else {
-                    clawTuah.setPosition(0.8);
+                
+                if(gamepad2.dpad_left){
+                    pos2uh += 0.01;
+                } else if (gamepad2.dpad_right){
+                    pos2uh -= 0.01;
                 }
+                
                 
             } else {
                 slideTuah.setTargetPosition(10);
                 clawTuah.setPosition(0.75);
                 slideTuah.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-                pos = 0.72;
+                pos = 0.3;
                 slideTuah.setPower(1.0);
             }
 
             
            
-            telemetry.addData("pos",pos);
+            telemetry.addData("pos" ,pos);
+            telemetry.addData("pos2uh",pos2uh);
             telemetry.addData("slideTUAH",slideTuah.getCurrentPosition());
             assServo.setPosition(pos);
+            freakWrist.setPosition(pos2uh);
             if(gamepad1.a) {
                 slide.setTargetPosition(850);
                 slide.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
@@ -137,6 +147,12 @@ public class TwoPersonTele extends LinearOpMode {
                     slowMode    = false;
                 }
                 rateLimit.reset();
+            }
+            
+            if(gamepad2.a){
+                clawTuah.setPosition(0.5);
+            } else {
+                clawTuah.setPosition(0.8);
             }
             
             if(gamepad1.dpad_up && gamepad1.dpad_down){
