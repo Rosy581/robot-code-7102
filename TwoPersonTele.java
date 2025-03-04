@@ -113,7 +113,7 @@ public class TwoPersonTele extends LinearOpMode {
                 
             } else {
                 slideTuah.setTargetPosition(10);
-                clawTuah.setPosition(0.75);
+                clawTuah.setPosition(0.8);
                 slideTuah.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
                 pos = 0.3;
                 slideTuah.setPower(1.0);
