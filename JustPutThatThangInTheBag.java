@@ -65,7 +65,7 @@ public class JustPutThatThangInTheBag extends LinearOpMode {
                     }
                     break;
                 case "step 3":
-                    robot.encoderDrive(DRIVE_SPEED,-3);
+                    robot.encoderDrive(DRIVE_SPEED,-9);
                     robot.rotateTo(0,-0.6);
                     robot.encoderDrive(DRIVE_SPEED,12);
                     state = "step 4";

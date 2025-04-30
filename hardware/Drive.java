@@ -124,7 +124,7 @@ public class Drive {
         
         backArm1.setPower(1);
         backArm2.setPower(1);
-        }
+    }
 
     public void setPower(double n) throws InterruptedException {
         setPower(n,n,n,n);

@@ -101,8 +101,7 @@ public class ConceptDatalogger extends LinearOpMode
     /*
      * This class encapsulates all the fields that will go into the datalog.
      */
-    public static class Datalog
-    {
+    public static class Datalog {
         // The underlying datalogger object - it cares only about an array of loggable fields
         private final Datalogger datalogger;
 
@@ -115,8 +114,7 @@ public class ConceptDatalogger extends LinearOpMode
         public Datalogger.GenericField roll         = new Datalogger.GenericField("Roll");
         public Datalogger.GenericField battery      = new Datalogger.GenericField("Battery");
 
-        public Datalog(String name)
-        {
+        public Datalog(String name) {
             // Build the underlying datalog object
             datalogger = new Datalogger.Builder()
 
@@ -142,8 +140,7 @@ public class ConceptDatalogger extends LinearOpMode
 
         // Tell the datalogger to gather the values of the fields
         // and write a new line in the log.
-        public void writeLine()
-        {
+        public void writeLine() {
             datalogger.writeLine();
         }
     }

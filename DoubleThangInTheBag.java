@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -18,14 +19,14 @@ import org.firstinspires.ftc.teamcode.hardware.Slide;
 
 //THis is a sample using ideas from https://github.com/gearsincorg/SimplifiedOdometry
 
-@Autonomous(name = "ClipTuahAndAnotha")
-public class Simplified_Odemetry extends LinearOpMode {
-    double startingX = 81;
+@Autonomous
+public class DoubleThangInTheBag extends LinearOpMode {
+    double startingX = 33;
     double startingY = 7.5;
     double startingHeading = 0;
-    private static final int bar     = 2950;
-    private static final int clipped = 2250;
-    private static final int wall    = 850;
+    
+    int floor = 2000;
+    int basket;
     
     private static final double DRIVE_GAIN          = 0.05;     // Strength of axial position control
     private static final double DRIVE_ACCEL         = 5;     // Acceleration limit.  Percent Power change per second.  1.0 = 0-100% power in 1 sec.
@@ -46,13 +47,17 @@ public class Simplified_Odemetry extends LinearOpMode {
     private DcMotor backRightMotor;
     private DcMotor frontLeftMotor;
     private DcMotor frontRightMotor;
-    
-    private DcMotor backArm1;
-    private DcMotor backArm2;
-    private Datalog datalog;
     private Slide slide;
-    private CRServo claw;
-    private  VoltageSensor battery;
+    
+    private DcMotor slideTuah;
+    private CRServo clawServo;
+    private DcMotor backArm1;
+    private DcMotor backArm2;  
+    private Servo assServo;
+    private Servo clawTuah;
+    private Servo freakWrist;
+    private Datalog datalog;
+    private VoltageSensor battery;
     private double desiredHeadingDegrees = 0;
     double autonomousMaxSpeed = 1.0;
     double autonomousMinSpeed = 0.25;
@@ -72,7 +77,9 @@ public class Simplified_Odemetry extends LinearOpMode {
         battery         = hardwareMap.voltageSensor.get("Control Hub");
         slide           = new Slide(hardwareMap, this, 50);
         datalog         = new Datalog("datalog_03");
-        claw            = hardwareMap.crservo.get("claw");
+        assServo        = hardwareMap.servo.get("assClaw");
+        clawTuah        = hardwareMap.servo.get("clawTuah");
+        freakWrist      = hardwareMap.servo.get("freakWrist");
         
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -100,23 +107,14 @@ public class Simplified_Odemetry extends LinearOpMode {
         waitForStart();
         if (opModeIsActive()) {
             SparkFunOTOS.Pose2D pos = odometry.getPosition();
-            moveArm(1000);
-            clipThatThang();
-            DriveToPose2D(    104, 32, 0,    autonomousMaxSpeed, autonomousMinSpeed, 0.1);
-            VelDriveToPose2D( 104, 55, 0,    autonomousMaxSpeed, autonomousMinSpeed, 0.1);
-            DriveToPose2D(    117, 55, 0,    autonomousMaxSpeed, autonomousMinSpeed, 0.1);
-            VelDriveToPose2D( 117, 23, 0,    autonomousMaxSpeed, autonomousMinSpeed, 0.1);
-            //DriveToPose2D(    119, 55, 0,    autonomousMaxSpeed, autonomousMinSpeed, 0.1);
-            //VelDriveToPose2D( 129, 55, 0,    autonomousMaxSpeed, autonomousMinSpeed, 0.1);
-            //DriveToPose2D(    129, 23, 0,    autonomousMaxSpeed, autonomousMinSpeed, 0.1);
-            DriveToPose2D(    121, 25, 180,  autonomousMaxSpeed, autonomousMinSpeed, 0.1);
-            grabThatThang();
-            clipThatThang();
-            grabThatThang();
-            clipThatThang();
-            slide.moveTo(0);
-            moveArm(0);
-            VelDriveToPose2D(   128, 10, 0,  autonomousMaxSpeed, autonomousMinSpeed, 0.1);
+            assServo.setPosition(0.3);
+            DriveToPose2D( 15, 15, -45, autonomousMaxSpeed, autonomousMinSpeed, 0.1);
+            slide.moveTo(3500);
+            while(!slide.atTarget()){}
+            assServo.setPosition(0);
+            DriveToPose2D( 24.5, 19, -45, autonomousMaxSpeed, autonomousMinSpeed, 0.1);
+            moveArm(floor);
+            
             pos = odometry.getPosition();
             while (opModeIsActive()) {
                 
@@ -130,36 +128,7 @@ public class Simplified_Odemetry extends LinearOpMode {
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
     }
-    
-    private void grabThatThang() throws InterruptedException{
-        claw.setPower(0.25);
-        slide.moveTo(wall);
-        if(clipOffSet != 0){
-            VelDriveToPose2D(121, 14, 180, 0.4, autonomousMinSpeed, 0.1);
-        }
-        DriveToPose2D(121, 9, 180, 0.5, 0.25, 0.1);
-        while(!slide.atTarget() && opModeIsActive()){}
-        claw.setPower(-0.25);
-        slide.moveTo(wall+300);
-        while(!slide.atTarget()){}
-        DriveToPose2D(121, 12, 180, 0.5, 0.25, 0.1);
-    }
-    
-    private double clipOffSet = 0;
-    private void clipThatThang() throws InterruptedException{
-        claw.setPower(-0.25);
-        slide.moveTo(bar);
-        if(clipOffSet != 0){
-            VelDriveToPose2D(startingX - clipOffSet, 35, 0, 0.4, autonomousMinSpeed, 0.1);
-        }
-        slide.moveTo(bar);
-        DriveToPose2D(startingX - clipOffSet, 37, 0, 0.4, autonomousMinSpeed, 0.1);
-        slide.moveTo(clipped);
-        while(!slide.atTarget() && opModeIsActive()){}
-        claw.setPower(0.25);
-        Thread.sleep(125);
-        clipOffSet += 3;
-    }
+
     private void VelDriveToPose2D(double x, double y, double Heading, double MaxPower, double minPower, double holdTime) {
         SparkFunOTOS.Pose2D pos = odometry.getPosition();
         SparkFunOTOS.Pose2D vel = odometry.getVelocity();
@@ -426,85 +395,4 @@ public class Simplified_Odemetry extends LinearOpMode {
         }
     }
 
-}
-
-class ProportionalControl {
-    double  lastOutput;
-    double  lastError;
-    double  gain;
-    double  accelLimit;
-    double  liveOutputLimit;
-    double  tolerance;
-    double deadband;
-    boolean circular;
-    boolean inPosition;
-    ElapsedTime cycleTime = new ElapsedTime();
-
-    public ProportionalControl(double gain, double accelLimit, double tolerance, double deadband, boolean circular) {
-        this.gain = gain;
-        this.accelLimit = accelLimit;
-        this.tolerance = tolerance;
-        this.deadband = deadband;
-        this.circular = circular;
-        reset();
-    }
-
-    /**
-     * Determines power required to obtain the desired setpoint value based on new input value.
-     * Uses proportional gain, and limits rate of change of output, as well as max output.
-     * @param input  Current live control input value (from sensors)
-     * @return desired output power.
-     */
-    public double getOutput(double error) {
-        //double error = setPoint - input;
-        double dV = cycleTime.seconds() * accelLimit;
-        double output;
-
-        // normalize to +/- 180 if we are controlling heading
-        if (circular) {
-            while (error > 180)  error -= 360;
-            while (error <= -180) error += 360;
-        }
-
-        inPosition = (Math.abs(error) < tolerance);
-
-        // Prevent any very slow motor output accumulation
-        if (Math.abs(error) <= deadband) {
-            output = 0;
-        } else {
-            // calculate output power using gain and clip it to the limits
-            output = (error * gain);
-            output = Range.clip(output, 0, liveOutputLimit);
-
-            // Now limit rate of change of output (acceleration)
-            if ((output - lastOutput) > dV) {
-                output = lastOutput + dV;
-            } else if ((output - lastOutput) < -dV) {
-                output = lastOutput - dV;
-            }
-        }
-
-        lastOutput = output;
-        lastError = error;
-        cycleTime.reset();
-        return output;
-    }
-
-    public boolean inPosition(){
-        return inPosition;
-    }
-
-    public void reset(double powerLimit) {
-        liveOutputLimit = Math.abs(powerLimit);
-        reset();
-    }
-
-    /**
-     * Leave everything else the same, Just restart the acceleration timer and set output to 0
-     */
-    public void reset() {
-        cycleTime.reset();
-        inPosition = false;
-        lastOutput = 0.0;
-    }
 }

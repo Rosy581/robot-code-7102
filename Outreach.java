@@ -1,16 +1,16 @@
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
-import org.firstinspires.ftc.teamcode.hardware.GP;
 import java.util.concurrent.TimeUnit;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
-@TeleOp(name = "Tag Team That Specimen", group = "Robot")
-public class TwoPersonTele extends LinearOpMode {
+@TeleOp(name = "Outreach", group = "Robot")
+public class Outreach extends LinearOpMode {
 
     private DcMotor frontLeftMotor;
     private DcMotor backLeftMotor;
@@ -24,19 +24,25 @@ public class TwoPersonTele extends LinearOpMode {
     private Servo assServo;
     private Servo clawTuah;
     private Servo freakWrist;
-    private GP lastGp = new GP();
+    private DigitalChannel touchSensor;
+ 
+    public static final double COUNTS_PER_MOTOR_REV = 1440; // eg: TETRIX Motor Encoder
+    public static final double DRIVE_GEAR_REDUCTION = 1.0; // No External Gearing.
+    public static final double WHEEL_DIAMETER_INCHES = 3.77953; // For figuring circumference
+    public static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
  
     @Override
     
     public void runOpMode() throws InterruptedException {
 
+        touchSensor     = hardwareMap.get(DigitalChannel.class, "touchMe");
         frontLeftMotor  = hardwareMap.dcMotor.get("leftFront");
         backLeftMotor   = hardwareMap.dcMotor.get("leftBack");
         frontRightMotor = hardwareMap.dcMotor.get("rightFront");
         backRightMotor  = hardwareMap.dcMotor.get("rightBack");
         backArm1 = hardwareMap.dcMotor.get("backArm1");
         backArm2 = hardwareMap.dcMotor.get("backArm2");
-        slide = hardwareMap.dcMotor.get("slide");
+        slide =      hardwareMap.dcMotor.get("slide");
         slideTuah  = hardwareMap.dcMotor.get("slideTuah");
         clawServo  = hardwareMap.crservo.get("claw");
         assServo   = hardwareMap.servo.get("assClaw");
@@ -68,13 +74,13 @@ public class TwoPersonTele extends LinearOpMode {
         
         
         double slowModeMod  = 1.0;
-        slowModeMod = 0.4;
+        slowModeMod = 0.5;
         
         double pos          = 0.5;
         double pos2uh       = 0.5;
         boolean slowMode    = false;
         double targetPos = 0.0;
-        Deadline rateLimit  = new Deadline(250, TimeUnit.MILLISECONDS);
+        Deadline rateLimit   = new Deadline(250, TimeUnit.MILLISECONDS);
         Deadline rateLimit2  = new Deadline(250, TimeUnit.MILLISECONDS);
         
         waitForStart();
@@ -100,9 +106,9 @@ public class TwoPersonTele extends LinearOpMode {
                 pos2uh = pos2uh > 1 ? 1 : pos2uh;
                 pos2uh = pos2uh < 0 ? 0 : pos2uh;
 
-                if(gamepad2.dpad_up){
+                if(gamepad2.dpad_up && slide.getCurrentPosition() <= 4000){
                     pos += 0.01;
-                } else if (gamepad2.dpad_down){
+                } else if (gamepad2.dpad_down && slide.getCurrentPosition() >= 0 ){
                     pos -= 0.01;
                 }
                 
@@ -111,7 +117,7 @@ public class TwoPersonTele extends LinearOpMode {
                 } else if (gamepad2.dpad_right){
                     pos2uh -= 0.01;
                 }
-                
+
                 
             } else {
                 slideTuah.setTargetPosition(10);
@@ -128,18 +134,7 @@ public class TwoPersonTele extends LinearOpMode {
             telemetry.addData("slideTUAH",slideTuah.getCurrentPosition());
             assServo.setPosition(pos);
             freakWrist.setPosition(pos2uh);
-            if(gamepad1.a) {
-                slide.setTargetPosition(850);
-                slide.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-                slide.setPower(1);
-            }
             
-            if(gamepad1.b) {
-                slide.setTargetPosition(2750);
-                slide.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-                slide.setPower(1);
-            }
-                
             if(rateLimit.hasExpired() && (gamepad1.x || gamepad2.x)){
                 if(slowModeMod == 1){
                     slowModeMod = 0.25;
@@ -170,6 +165,11 @@ public class TwoPersonTele extends LinearOpMode {
                 slide.setPower(0);
             }
 
+                            
+            if (!touchSensor.getState()){
+                    encoderDrive(0.5,-10,-10);
+            }
+            
             
             backArm1.setPower(-gamepad2.right_stick_y);
             backArm2.setPower(-gamepad2.right_stick_y);
@@ -191,8 +191,54 @@ public class TwoPersonTele extends LinearOpMode {
             backLeftMotor.setPower(backLeftPower);
             frontRightMotor.setPower(frontRightPower);
             backRightMotor.setPower(backRightPower);
-            telemetry.update(); 
-            lastGp.update(gamepad1);
+            telemetry.update();
+        }
+    }
+    public void encoderDrive(double speed,
+        double leftInches, double rightInches) {
+        int newFrontLeftTarget;
+        int newFrontRightTarget;
+        int newBackLeftTarget;
+        int newBackRightTarget;
+
+        if (opModeIsActive()) {
+
+            newFrontLeftTarget  = frontLeftMotor.getCurrentPosition()  - (int) (leftInches  * COUNTS_PER_INCH);
+            newFrontRightTarget = frontRightMotor.getCurrentPosition() - (int) (rightInches * COUNTS_PER_INCH);
+            newBackLeftTarget   = backLeftMotor.getCurrentPosition()   - (int) (leftInches  * COUNTS_PER_INCH);
+            newBackRightTarget  = backRightMotor.getCurrentPosition()  - (int) (rightInches * COUNTS_PER_INCH);
+
+            frontLeftMotor.setTargetPosition(newFrontLeftTarget);
+            frontRightMotor.setTargetPosition(newFrontRightTarget);
+            backLeftMotor.setTargetPosition(newBackLeftTarget);
+            backRightMotor.setTargetPosition(newBackRightTarget);
+
+            frontLeftMotor.setMode( DcMotor.RunMode.RUN_TO_POSITION);
+            frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backLeftMotor.setMode(  DcMotor.RunMode.RUN_TO_POSITION);
+            backRightMotor.setMode( DcMotor.RunMode.RUN_TO_POSITION);
+
+            frontLeftMotor.setPower(Math.abs(speed));
+            frontRightMotor.setPower(Math.abs(speed));
+            backLeftMotor.setPower(Math.abs(speed));
+            backRightMotor.setPower(Math.abs(speed));
+
+            while (opModeIsActive() & (frontLeftMotor.isBusy() &&
+                            frontRightMotor.isBusy() &&
+                            backLeftMotor.isBusy() &&
+                            backRightMotor.isBusy())) {
+
+            }
+            
+            frontLeftMotor.setPower(0);
+            frontRightMotor.setPower(0);
+            backLeftMotor.setPower(0);
+            backRightMotor.setPower(0);
+
+            frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); 
         }
     }
 }
