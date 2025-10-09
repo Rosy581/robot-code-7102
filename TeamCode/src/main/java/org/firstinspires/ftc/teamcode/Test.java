@@ -14,6 +14,8 @@ public class Test extends LinearOpMode {
     private DcMotor backRight;
     private DcMotor backLeft;
     private DcMotor flywheel;
+    private DcMotor shooting1;
+    private DcMotor shooting2;
 
     @Override
     public void runOpMode() {
@@ -22,10 +24,12 @@ public class Test extends LinearOpMode {
         backRight  = hardwareMap.dcMotor.get("backRight");
         backLeft   = hardwareMap.dcMotor.get("backLeft");
         flywheel   = hardwareMap.dcMotor.get("flywheel");
+        shooting1  = hardwareMap.dcMotor.get("shooting1");
+        shooting2  = hardwareMap.dcMotor.get("shooting2");
 
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-
+        shooting2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -36,12 +40,21 @@ public class Test extends LinearOpMode {
             double y  = -gamepad1.left_stick_y;
             double rx = -gamepad1.right_stick_x;
 
-            if(gamepad1.x){
+
+            if(gamepad1.x && !(gamepad1.y)){
                 flywheel.setPower(1.0);
-            } else if (gamepad1.y){
+            } else if (gamepad1.y && !(gamepad1.x)){
                 flywheel.setPower(-1);
             } else {
                 flywheel.setPower(0);
+            }
+
+            if(gamepad1.a){
+                shooting1.setPower(1);
+                shooting2.setPower(1);
+            } else {
+                shooting1.setPower(0);
+                shooting2.setPower(0);
             }
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx),1);
@@ -49,6 +62,7 @@ public class Test extends LinearOpMode {
             double frontLeftPower  = (y + x + rx) / denominator;
             double backRightPower  = (y + x - rx) / denominator;
             double backLeftPower   = (y - x + rx) / denominator;
+
             frontRight.setPower(frontRightPower);
             frontLeft.setPower(frontLeftPower);
             backRight.setPower(backRightPower);
