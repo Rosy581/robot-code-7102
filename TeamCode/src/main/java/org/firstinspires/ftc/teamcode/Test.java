@@ -4,7 +4,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-
+import com.qualcomm.robotcore.hardware.Gamepad;
+import org.firstinspires.ftc.teamcode.hardware.GP;
 @TeleOp(name="Test Drive", group="Linear OpMode")
 
 public class Test extends LinearOpMode {
@@ -16,6 +17,8 @@ public class Test extends LinearOpMode {
     private DcMotor flywheel;
     private DcMotor shooting1;
     private DcMotor shooting2;
+
+    private Gamepad oldGp;
 
     @Override
     public void runOpMode() {
@@ -33,8 +36,10 @@ public class Test extends LinearOpMode {
 
         //flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        waitForStart();
+        double shootingPower = 0.5;
 
+        waitForStart();
+        oldGp = gamepad1;
         while (opModeIsActive()) {
             double x  = gamepad1.left_stick_x;
             double y  = -gamepad1.left_stick_y;
@@ -50,11 +55,23 @@ public class Test extends LinearOpMode {
             }
 
             if(gamepad1.a){
-                shooting1.setPower(1);
-                shooting2.setPower(1);
+                shooting1.setPower(shootingPower);
+                shooting2.setPower(shootingPower);
             } else {
                 shooting1.setPower(0);
                 shooting2.setPower(0);
+            }
+
+            telemetry.addData("ShootingPower",shootingPower);
+            telemetry.addData("Up",gamepad1.dpad_up);
+            telemetry.addData("LastUp",oldGp.dpad_up);
+            telemetry.addData("Down",gamepad1.dpad_down);
+            telemetry.addData("LastDown",oldGp.dpad_down);
+
+            if(gamepad1.dpad_up && !oldGp.dpad_up){
+                shootingPower = shootingPower + 0.05;
+            } else if (gamepad1.dpad_down && !oldGp.dpad_down){
+                shootingPower = shootingPower - 0.05;
             }
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx),1);
@@ -67,7 +84,7 @@ public class Test extends LinearOpMode {
             frontLeft.setPower(frontLeftPower);
             backRight.setPower(backRightPower);
             backLeft.setPower(backLeftPower);
-
+            oldGp = gamepad1;
             telemetry.update();
         }
     }
