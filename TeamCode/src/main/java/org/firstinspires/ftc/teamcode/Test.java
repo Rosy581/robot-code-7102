@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.hardware.GP;
 @TeleOp(name="Test Drive", group="Linear OpMode")
@@ -17,18 +18,19 @@ public class Test extends LinearOpMode {
     private DcMotor flywheel;
     private DcMotor shooting1;
     private DcMotor shooting2;
-
+    private CRServo feedingServo;
     private Gamepad oldGp;
 
     @Override
     public void runOpMode() {
-        frontRight = hardwareMap.dcMotor.get("frontRight");
-        frontLeft  = hardwareMap.dcMotor.get("frontLeft");
-        backRight  = hardwareMap.dcMotor.get("backRight");
-        backLeft   = hardwareMap.dcMotor.get("backLeft");
-        flywheel   = hardwareMap.dcMotor.get("flywheel");
-        shooting1  = hardwareMap.dcMotor.get("shooting1");
-        shooting2  = hardwareMap.dcMotor.get("shooting2");
+        frontRight   = hardwareMap.dcMotor.get("frontRight");
+        frontLeft    = hardwareMap.dcMotor.get("frontLeft");
+        backRight    = hardwareMap.dcMotor.get("backRight");
+        backLeft     = hardwareMap.dcMotor.get("backLeft");
+        flywheel     = hardwareMap.dcMotor.get("flywheel");
+        shooting1    = hardwareMap.dcMotor.get("shooting1");
+        shooting2    = hardwareMap.dcMotor.get("shooting2");
+        feedingServo = hardwareMap.crservo.get("feedingServo");
 
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -68,10 +70,12 @@ public class Test extends LinearOpMode {
             telemetry.addData("Down",gamepad1.dpad_down);
             telemetry.addData("LastDown",oldGp.dpad_down);
 
-            if(gamepad1.dpad_up && !oldGp.dpad_up){
-                shootingPower = shootingPower + 0.05;
-            } else if (gamepad1.dpad_down && !oldGp.dpad_down){
-                shootingPower = shootingPower - 0.05;
+            if(gamepad1.dpad_up){
+                feedingServo.setPower(1.0);
+            } else if (gamepad1.dpad_down){
+                feedingServo.setPower(-1.0);
+            } else {
+                feedingServo.setPower(0);
             }
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx),1);
