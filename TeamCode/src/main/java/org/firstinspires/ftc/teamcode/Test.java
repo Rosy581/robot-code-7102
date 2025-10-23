@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+//package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import org.firstinspires.ftc.teamcode.hardware.GP;
+//import org.firstinspires.ftc.teamcode.hardware.GP;
 @TeleOp(name="Test Drive", group="Linear OpMode")
 
 public class Test extends LinearOpMode {
@@ -19,17 +19,17 @@ public class Test extends LinearOpMode {
     private DcMotor shooting1;
     private DcMotor shooting2;
     private CRServo feedingServo;
-    private Gamepad oldGp;
+    //private Gamepad oldGp;
 
     @Override
     public void runOpMode() {
         frontRight   = hardwareMap.dcMotor.get("frontRight");
-        frontLeft    = hardwareMap.dcMotor.get("frontLeft");
-        backRight    = hardwareMap.dcMotor.get("backRight");
-        backLeft     = hardwareMap.dcMotor.get("backLeft");
-        flywheel     = hardwareMap.dcMotor.get("flywheel");
-        shooting1    = hardwareMap.dcMotor.get("shooting1");
-        shooting2    = hardwareMap.dcMotor.get("shooting2");
+        frontLeft	= hardwareMap.dcMotor.get("frontLeft");
+        backRight	= hardwareMap.dcMotor.get("backRight");
+        backLeft	 = hardwareMap.dcMotor.get("backLeft");
+        flywheel	 = hardwareMap.dcMotor.get("flywheel");
+        shooting1	= hardwareMap.dcMotor.get("shooting1");
+        shooting2	= hardwareMap.dcMotor.get("shooting2");
         feedingServo = hardwareMap.crservo.get("feedingServo");
 
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -38,10 +38,10 @@ public class Test extends LinearOpMode {
 
         //flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        double shootingPower = 0.5;
+        double shootingPower = 0.75;
 
         waitForStart();
-        oldGp = gamepad1;
+        //oldGp = gamepad1;
         while (opModeIsActive()) {
             double x  = gamepad1.left_stick_x;
             double y  = -gamepad1.left_stick_y;
@@ -56,20 +56,21 @@ public class Test extends LinearOpMode {
                 flywheel.setPower(0);
             }
 
-            if(gamepad1.a){
-                shooting1.setPower(shootingPower);
-                shooting2.setPower(shootingPower);
-            } else {
-                shooting1.setPower(0);
-                shooting2.setPower(0);
-            }
+            shooting1.setPower(gamepad1.right_trigger);
+            shooting2.setPower(gamepad1.right_trigger);
+            // if(gamepad1.a){
+            //	 shooting1.setPower(shootingPower);
+            //	 shooting2.setPower(shootingPower);
+            // } else {
+            //	 shooting1.setPower(0);
+            //	 shooting2.setPower(0);
+            // }
 
             telemetry.addData("ShootingPower",shootingPower);
             telemetry.addData("Up",gamepad1.dpad_up);
-            telemetry.addData("LastUp",oldGp.dpad_up);
+            //telemetry.addData("LastUp",oldGp.dpad_up);
             telemetry.addData("Down",gamepad1.dpad_down);
-            telemetry.addData("LastDown",oldGp.dpad_down);
-
+            //telemetry.addData("LastDown",oldGp.dpad_down);
             if(gamepad1.dpad_up){
                 feedingServo.setPower(1.0);
             } else if (gamepad1.dpad_down){
@@ -77,6 +78,7 @@ public class Test extends LinearOpMode {
             } else {
                 feedingServo.setPower(0);
             }
+
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx),1);
             double frontRightPower = (y - x - rx) / denominator;
@@ -88,7 +90,7 @@ public class Test extends LinearOpMode {
             frontLeft.setPower(frontLeftPower);
             backRight.setPower(backRightPower);
             backLeft.setPower(backLeftPower);
-            oldGp = gamepad1;
+            //oldGp = gamepad1;
             telemetry.update();
         }
     }
