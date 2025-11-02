@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Gamepad;
 //import org.firstinspires.ftc.teamcode.hardware.GP;
-@TeleOp(name="Test Drive", group="Linear OpMode")
+@TeleOp(name="Test", group="Tele")
 
 public class Test extends LinearOpMode {
 
@@ -46,33 +46,6 @@ public class Test extends LinearOpMode {
             double x  = gamepad1.left_stick_x;
             double y  = -gamepad1.left_stick_y;
             double rx = -gamepad1.right_stick_x;
-
-
-            if(gamepad1.left_bumper){
-                flywheel.setPower(1.0);
-            }
-            if(gamepad1.right_bumper){
-                shooting1.setPower(0.75);
-                shooting2.setPower(0.75);
-            }
-            /*
-            lb - intake
-            outtake alaways on
-            dpup - converyor up
-            dpdown - converyor down
-             */
-
-            telemetry.addData("ShootingPower",shootingPower);
-            telemetry.addData("Up",gamepad1.dpad_up);
-            telemetry.addData("Down",gamepad1.dpad_down);
-            if(gamepad1.dpad_up){
-                feedingServo.setPower(1.0);
-            } else if (gamepad1.dpad_down){
-                feedingServo.setPower(-1.0);
-            } else {
-                feedingServo.setPower(0);
-            }
-
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx),1);
             double frontRightPower = (y - x - rx) / denominator;
