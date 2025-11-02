@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 @TeleOp(name="Main TeleOP", group="Tele")
 
@@ -15,12 +14,10 @@ public class TeleDrive extends LinearOpMode {
     private DcMotor backRight;
     private DcMotor backLeft;
     private DcMotor flywheel;
-    private DcMotor shooting1;
-    private DcMotor shooting2;
+    private DcMotor shootingLeft;
+    private DcMotor shootingRight;
     private CRServo feedingServo;
     private double intakeSpeed = 0;
-    private boolean oldX = false;
-    private boolean oldY = false;
     private double leftRPM      = 0;
     private double rightRPM     = 0;
     private double leftPrevPos  = 0;
@@ -34,23 +31,42 @@ public class TeleDrive extends LinearOpMode {
         backRight	 = hardwareMap.dcMotor.get("backRight");
         backLeft	 = hardwareMap.dcMotor.get("backLeft");
         flywheel	 = hardwareMap.dcMotor.get("flywheel");
-        shooting1	 = hardwareMap.dcMotor.get("shooting1");
-        shooting2  	 = hardwareMap.dcMotor.get("shooting2");
+        shootingLeft	 = hardwareMap.dcMotor.get("shooting1");
+        shootingRight  	 = hardwareMap.dcMotor.get("shooting2");
         feedingServo = hardwareMap.crservo.get("feedingServo");
 
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        shooting2.setDirection(DcMotorSimple.Direction.REVERSE);
+        shootingRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        double shootingPower = 0.45;
+        double rightShootingPower = 0.45;
+        double leftShootingPower  = 0.45;
         waitForStart();
 
         while (opModeIsActive()) {
             double x  =  gamepad1.left_stick_x;
             double y  = -gamepad1.left_stick_y;
             double rx =  gamepad1.right_stick_x;
+
+
+            leftRPM  = (leftPrevPos  - shootingLeft.getCurrentPosition())/28;
+            rightRPM = (rightPrevPos - shootingRight.getCurrentPosition())/28;
+
+            if((leftShootingPower > 0.0) && (rightShootingPower > 0.0)){
+                if((rightRPM+0.005)>= 0.21){
+                    rightShootingPower -= 0.01;
+                } else if ((rightRPM-0.005)<=0.21){
+                    rightShootingPower += 0.01;
+                }
+                if((leftRPM+0.005)>= 0.21){
+                    leftShootingPower -= 0.01;
+                } else if ((leftRPM-0.005)<=0.21){
+                    leftShootingPower = leftShootingPower + 0.01;
+                }
+            }
+
 
             if(gamepad1.left_bumper){
                 feedingServo.setPower(1.0);
@@ -61,12 +77,12 @@ public class TeleDrive extends LinearOpMode {
             }
 
             if(gamepad1.y){
-                shooting1.setPower(shootingPower);
-                shooting2.setPower(shootingPower);
+                shootingLeft.setPower(leftShootingPower);
+                shootingRight.setPower(rightShootingPower);
             }
             if(gamepad1.b){
-                shooting1.setPower(0);
-                shooting2.setPower(0);
+                shootingLeft.setPower(0);
+                shootingRight.setPower(0);
             }
 
             if(gamepad1.x){
@@ -83,25 +99,20 @@ public class TeleDrive extends LinearOpMode {
             double backRightPower  = (y + x - rx) / denominator;
             double backLeftPower   = (y - x + rx) / denominator;
 
-            leftRPM  = (leftPrevPos  - shooting1.getCurrentPosition())/28;
-            rightRPM = (rightPrevPos - shooting2.getCurrentPosition())/28;
-
             frontRight.setPower(frontRightPower);
             frontLeft.setPower(frontLeftPower);
             backRight.setPower(backRightPower);
             backLeft.setPower(backLeftPower);
 
 
-            telemetry.addData("ShootingPower",shootingPower);
+            telemetry.addData("leftShootingPower", leftShootingPower);
+            telemetry.addData("righttShootingPower",rightShootingPower);
             telemetry.addData("intake speed",intakeSpeed);
             telemetry.addData("LeftSpeed",leftRPM);
             telemetry.addData("RightSpeed",rightRPM);
 
-            oldX = gamepad1.x;
-            oldY = gamepad1.y;
-
-            leftPrevPos  = shooting1.getCurrentPosition();
-            rightPrevPos = shooting2.getCurrentPosition();
+            leftPrevPos  = shootingLeft.getCurrentPosition();
+            rightPrevPos = shootingRight.getCurrentPosition();
 
             telemetry.update();
         }
