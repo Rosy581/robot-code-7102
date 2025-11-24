@@ -1,63 +1,53 @@
-//package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import java.util.concurrent.TimeUnit;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.Gamepad;
-//import org.firstinspires.ftc.teamcode.hardware.GP;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.internal.system.Deadline;
+
 @TeleOp(name="Test", group="Tele")
 
 public class Test extends LinearOpMode {
 
-    private DcMotor frontRight;
-    private DcMotor frontLeft;
-    private DcMotor backRight;
-    private DcMotor backLeft;
-    private DcMotor flywheel;
-    private DcMotor shooting1;
-    private DcMotor shooting2;
-    private CRServo feedingServo;
-    //private Gamepad oldGp;
 
+    double kp = 0.0;
+    double k  = 0.0;
+    double output = 0.0;
+    double tollerance = 100;
+    private ElapsedTime runtime = new ElapsedTime();
+    double power = 0.5;
+    double lastTime = 0;
+    double curTime = 0;
+    double prevPos = 0;
     @Override
     public void runOpMode() {
-        frontRight   = hardwareMap.dcMotor.get("frontRight");
-        frontLeft	= hardwareMap.dcMotor.get("frontLeft");
-        backRight	= hardwareMap.dcMotor.get("backRight");
-        backLeft	 = hardwareMap.dcMotor.get("backLeft");
-        flywheel	 = hardwareMap.dcMotor.get("flywheel");
-        shooting1	= hardwareMap.dcMotor.get("shooting1");
-        shooting2	= hardwareMap.dcMotor.get("shooting2");
-        feedingServo = hardwareMap.crservo.get("feedingServo");
 
-        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        shooting2.setDirection(DcMotorSimple.Direction.REVERSE);
+        DcMotor shooter  = hardwareMap.get(DcMotor.class, "shooter");
 
-        //flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        double shootingPower = 0.75;
+        Deadline rateLimit  = new Deadline(250, TimeUnit.MILLISECONDS);
 
         waitForStart();
-        //oldGp = gamepad1;
+        runtime.reset();
         while (opModeIsActive()) {
-            double x  = gamepad1.left_stick_x;
-            double y  = -gamepad1.left_stick_y;
-            double rx = -gamepad1.right_stick_x;
-
-            double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx),1);
-            double frontRightPower = (y - x - rx) / denominator;
-            double frontLeftPower  = (y + x + rx) / denominator;
-            double backRightPower  = (y + x - rx) / denominator;
-            double backLeftPower   = (y - x + rx) / denominator;
-
-            frontRight.setPower(frontRightPower);
-            frontLeft.setPower(frontLeftPower);
-            backRight.setPower(backRightPower);
-            backLeft.setPower(backLeftPower);
+            if(rateLimit.hasExpired() && (gamepad1.dpad_up)){
+                power = power + 0.05;
+                rateLimit.reset();
+            }
+            if(rateLimit.hasExpired() && (gamepad1.dpad_down)){
+                power = power - 0.05;
+                rateLimit.reset();
+            }
+            curTime = getRuntime();
+            telemetry.addData("RPM",(Math.abs((shooter.getCurrentPosition()) - prevPos)/28)*600);
+            telemetry.addData("Power",power);
+            telemetry.addData("Output",output);
+            shooter.setPower(output);
+            lastTime = getRuntime();
+            prevPos = shooter.getCurrentPosition();
             telemetry.update();
+            sleep(100);
         }
     }
 }

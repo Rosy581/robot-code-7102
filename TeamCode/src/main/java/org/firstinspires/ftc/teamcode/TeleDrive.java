@@ -1,72 +1,50 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.CRServo;
-
+import com.qualcomm.robotcore.hardware.Gamepad;
+import org.firstinspires.ftc.teamcode.configurables.Config.shooterConstants;
 @TeleOp(name="Main TeleOP", group="Tele")
 
 public class TeleDrive extends LinearOpMode {
-    private DcMotor frontRight;
-    private DcMotor frontLeft;
-    private DcMotor backRight;
-    private DcMotor backLeft;
-    private DcMotor flywheel;
-    private DcMotor shootingLeft;
-    private DcMotor shootingRight;
-    private CRServo feedingServo;
+    private Gamepad prevGamepad = new Gamepad();
     private double intakeSpeed = 0;
-    private double leftRPM      = 0;
-    private double rightRPM     = 0;
-    private double leftPrevPos  = 0;
-    private double rightPrevPos = 0;
+    public double RPM = 0;
+    public double shooterPower = 0;
+    private double prevPos;
+    private double lastTime;
+    private DcMotor shooter;
+    public boolean shooting = false;
+    public boolean onTarget = true;
 
     @Override
     public void runOpMode() throws InterruptedException {
+        TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        DcMotor frontRight = hardwareMap.dcMotor.get("frontRight");
+        DcMotor frontLeft  = hardwareMap.dcMotor.get("frontLeft");
+        DcMotor backRight  = hardwareMap.dcMotor.get("backRight");
+        DcMotor backLeft   = hardwareMap.dcMotor.get("backLeft");
 
-        frontRight   = hardwareMap.dcMotor.get("frontRight");
-        frontLeft	 = hardwareMap.dcMotor.get("frontLeft");
-        backRight	 = hardwareMap.dcMotor.get("backRight");
-        backLeft	 = hardwareMap.dcMotor.get("backLeft");
-        flywheel	 = hardwareMap.dcMotor.get("flywheel");
-        shootingLeft	 = hardwareMap.dcMotor.get("shooting1");
-        shootingRight  	 = hardwareMap.dcMotor.get("shooting2");
-        feedingServo = hardwareMap.crservo.get("feedingServo");
+        DcMotor intake     = hardwareMap.dcMotor.get("flywheel");
+        shooter            = hardwareMap.dcMotor.get("shooter");
+
+        CRServo feedingServo = hardwareMap.crservo.get("feedingServo");
 
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        shootingRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        double rightShootingPower = 0.45;
-        double leftShootingPower  = 0.45;
+        //intake.setDirection(DcMotorSimple.Direction.REVERSE);
         waitForStart();
 
         while (opModeIsActive()) {
             double x  =  gamepad1.left_stick_x;
             double y  = -gamepad1.left_stick_y;
             double rx =  gamepad1.right_stick_x;
-
-
-            leftRPM  = (leftPrevPos  - shootingLeft.getCurrentPosition())/28;
-            rightRPM = (rightPrevPos - shootingRight.getCurrentPosition())/28;
-
-            if((leftShootingPower > 0.0) && (rightShootingPower > 0.0)){
-                if((rightRPM+0.005)>= 0.21){
-                    rightShootingPower -= 0.01;
-                } else if ((rightRPM-0.005)<=0.21){
-                    rightShootingPower += 0.01;
-                }
-                if((leftRPM+0.005)>= 0.21){
-                    leftShootingPower -= 0.01;
-                } else if ((leftRPM-0.005)<=0.21){
-                    leftShootingPower = leftShootingPower + 0.01;
-                }
-            }
-
 
             if(gamepad1.left_bumper){
                 feedingServo.setPower(1.0);
@@ -76,21 +54,9 @@ public class TeleDrive extends LinearOpMode {
                 feedingServo.setPower(0.0);
             }
 
-            if(gamepad1.y){
-                shootingLeft.setPower(leftShootingPower);
-                shootingRight.setPower(rightShootingPower);
-            }
-            if(gamepad1.b){
-                shootingLeft.setPower(0);
-                shootingRight.setPower(0);
-            }
-
-            if(gamepad1.x){
-                flywheel.setPower(1);
-            }
-
-            if(gamepad1.a) {
-                flywheel.setPower(0);
+            if (gamepad1.x && !prevGamepad.x) {
+                intakeSpeed = (intakeSpeed == 0)?1:0;
+                intake.setPower(intakeSpeed);
             }
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx),1);
@@ -104,17 +70,36 @@ public class TeleDrive extends LinearOpMode {
             backRight.setPower(backRightPower);
             backLeft.setPower(backLeftPower);
 
+            telemetryM.addData("intake speed",intakeSpeed);
 
-            telemetry.addData("leftShootingPower", leftShootingPower);
-            telemetry.addData("righttShootingPower",rightShootingPower);
-            telemetry.addData("intake speed",intakeSpeed);
-            telemetry.addData("LeftSpeed",leftRPM);
-            telemetry.addData("RightSpeed",rightRPM);
+            prevGamepad.copy(gamepad1);
 
-            leftPrevPos  = shootingLeft.getCurrentPosition();
-            rightPrevPos = shootingRight.getCurrentPosition();
-
-            telemetry.update();
+            telemetryM.update(telemetry);
         }
     }
+    public double getRPM(){
+        RPM = Math.abs((shooter.getCurrentPosition())-prevPos)/1680*(1000/(lastTime-getRuntime()));
+        prevPos = shooter.getCurrentPosition();
+        lastTime = getRuntime();
+        return RPM;
+    }
+    private void shoot(){
+        if(shooting){
+            if((Math.abs(shooterConstants.targetRPM - RPM) > shooterConstants.tolerance)) {
+                shooterPower = shooterConstants.Kp * (shooterConstants.targetRPM - RPM) + shooterConstants.Kv * (shooterConstants.targetRPM);
+                shooter.setPower(shooterPower);
+            } else {
+                //move ball into thing
+                shooting = false;
+            }
+        }
+    }
+    private void target(){
+        if(!onTarget){
+            /*
+            idrk how im gonna do this would rather not just blindly search because that'd be super slow
+             */
+        }
+    }
+
 }
