@@ -19,6 +19,7 @@ import java.util.List;
 
 public class Turret {
     final float decimation = 2;
+    public final static double gearRatio = 100.0/28;
     public boolean onTarget = false;
     public double RPM = 0;
     public boolean revved = false;
@@ -42,6 +43,9 @@ public class Turret {
         turretMotor    = _hardwareMap.dcMotor.get(_turretRotationDriveMotor);
         aimServo       = _hardwareMap.servo.get(_turretAimServo);
         shooter        = _hardwareMap.dcMotor.get(_shooter);
+
+        turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         imu            = _hardwareMap.get(IMU.class,"imu");
         Camera  camera = _hardwareMap.get(Camera.class,_camera);
@@ -69,7 +73,7 @@ public class Turret {
         BLUE
     }
     public double getRotation(){
-            return (turretMotor.getCurrentPosition()/28.0)*(100.0/28)*180+imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+            return (turretMotor.getCurrentPosition()/28.0)*(gearRatio)*180+imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
     }
     //angle of wall is 125 degrees
     //blue team april tag ID = 20
@@ -96,6 +100,7 @@ public class Turret {
                     for (AprilTagDetection detection : currentDetections) {
                         if (detection.metadata != null) {
                             if ((targetTagID < 0) || (detection.id == targetTagID)) {
+                                turretMotor.setPower(0.0);
                                 lastSeen = getRotation();
                                 onTarget = true;
                                 aiming = false;
@@ -107,7 +112,12 @@ public class Turret {
                     }
                 } else {
                     onTarget = false;
-                    turretMotor.setTargetPosition(turretMotor.getCurrentPosition());
+                    turretMotor.setTargetPosition((int) Math.round(28*(lastSeen-imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES))/180/gearRatio));
+                    if(!turretMotor.isBusy()){
+                        turretMotor.setTargetPosition(turretMotor.getTargetPosition()+50);
+                    }
+                    //Runs to (hopefully) last seen location
+                    turretMotor.setPower(0.75);
                 }
             }
         }
