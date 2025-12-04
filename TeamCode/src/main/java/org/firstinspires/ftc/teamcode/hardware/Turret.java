@@ -2,11 +2,13 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import android.util.Size;
 
-import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.hardware.rev.*;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.Camera;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.vision.VisionPortal;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.configurables.Config.shooterConstants;
@@ -16,91 +18,125 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 public class Turret {
-    static HardwareMap hardwareMap;
-    static final float decimation = 2;
-    public static boolean onTarget = false;
-    public static double RPM = 0;
+    final float decimation = 2;
+    public boolean onTarget = false;
+    public double RPM = 0;
+    public boolean revved = false;
     public double shooterPower = 0;
     private double prevPos;
     private double lastTime;
-    private static DcMotor shooter;
     public boolean shooting = false;
-    private static LinearOpMode tele;
-    public static AprilTagProcessor aprilTag;
-    public static int targetTag = 0;
-    private static AprilTagDetection targetedTag = null;
-    private static TelemetryManager telemetry;
-    public Turret(LinearOpMode _opMode, HardwareMap _hardwareMap, String _turretRotationDriveMotor, String _turretAimServo, String _camera, TelemetryManager _telemetry){
-        this.hardwareMap = _hardwareMap;
+    public boolean aiming = false;
+    public double lastSeen = 0;
+    private LinearOpMode opMode;
+    public AprilTagProcessor aprilTag;
+    public int targetTagID = 0;
+    public Thread aimingThread;
+    public DcMotor turretMotor;
+    public Servo aimServo;
+    private DcMotor shooter;
+    public VisionPortal camView;
+    public IMU imu;
+    public Turret(LinearOpMode _opMode, HardwareMap _hardwareMap, String _turretRotationDriveMotor, String _turretAimServo,String _shooter,String _camera){
 
-        DcMotor turretMotor  = hardwareMap.dcMotor.get(_turretRotationDriveMotor);
-        Servo   aimServo     = hardwareMap.servo.get(_turretAimServo);
-        Camera  camera       = hardwareMap.get(Camera.class,_camera);
-        this.telemetry = _telemetry;
-        tele = _opMode;
+        turretMotor    = _hardwareMap.dcMotor.get(_turretRotationDriveMotor);
+        aimServo       = _hardwareMap.servo.get(_turretAimServo);
+        shooter        = _hardwareMap.dcMotor.get(_shooter);
+
+        imu            = _hardwareMap.get(IMU.class,"imu");
+        Camera  camera = _hardwareMap.get(Camera.class,_camera);
+
+        opMode    = _opMode;
 
         Size resolution = new Size(1280,720);
 
-        VisionPortal camView = new VisionPortal.Builder()
+        camView = new VisionPortal.Builder()
                 .setCameraResolution(resolution)
                 .setCamera(camera.getCameraName())
                 .build();
 
         aprilTag = new AprilTagProcessor.Builder().build();
         aprilTag.setDecimation(decimation);
+
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+        imu.initialize(new IMU.Parameters(orientationOnRobot));
+
     }
     public enum TEAMCOLOR {
         RED,
         BLUE
     }
-    public static double getRotation(){
-        double rotation = 0;
-        return rotation;
+    public double getRotation(){
+            return (turretMotor.getCurrentPosition()/28.0)*(100.0/28)*180+imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
     }
-    public static void aim(TEAMCOLOR color){
-        //angle of wall is 125 degrees
-        //blue team ID = 20
-        //red team ID = 24
-        if (color == TEAMCOLOR.RED) {
-            targetTag = 24;
-        } else if (color == TEAMCOLOR.BLUE){
-            targetTag = 20;
+    //angle of wall is 125 degrees
+    //blue team april tag ID = 20
+    //red team april tag ID = 24
+
+    private class _aim implements Runnable{
+        TEAMCOLOR color;
+        _aim(TEAMCOLOR _color){
+            this.color = _color;
         }
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        for (AprilTagDetection detection : currentDetections) {
-            // Look to see if we have size info on this tag.
-            if (detection.metadata != null) {
-                //  Check to see if we want to track towards this tag.
-                if ((targetTag < 0) || (detection.id == targetTag)) {
-                    // Yes, we want to use this tag.
-                    onTarget = true;
-                    targetedTag = detection;
-                    break;  // don't look any further.
-                } else {
-                    // This tag is in the library, but we do not want to track it right now.
-                    telemetry.addData( "Tag ID %d is not desired", detection.id);
-                }
-            } else {
-                // This tag is NOT in the library, so we don't have enough information to track to it.
-                telemetry.addData("Tag ID %d is not in TagLibrary", detection.id);
+
+        @Override
+        public void run() {
+            targetTagID = 0;
+            if (color == TEAMCOLOR.RED) {
+                targetTagID = 24;
+            } else if (color == TEAMCOLOR.BLUE){
+                targetTagID = 20;
             }
-        }
-    }
-    public void shoot(){
-        if(shooting){
-            if((Math.abs(shooterConstants.targetRPM - RPM) > shooterConstants.tolerance)) {
-                shooterPower = shooterConstants.Kp * (shooterConstants.targetRPM - RPM) + shooterConstants.Kv * (shooterConstants.targetRPM);
-                shooter.setPower(shooterPower);
-            } else if(onTarget){
-                //move blocker out of the way
-                shooting = false;
+
+            while(aiming) {
+                List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+                if(!currentDetections.isEmpty()) {
+                    for (AprilTagDetection detection : currentDetections) {
+                        if (detection.metadata != null) {
+                            if ((targetTagID < 0) || (detection.id == targetTagID)) {
+                                lastSeen = getRotation();
+                                onTarget = true;
+                                aiming = false;
+                                break;
+                            }
+                        } else {
+                            onTarget = false;
+                        }
+                    }
+                } else {
+                    onTarget = false;
+                    turretMotor.setTargetPosition(turretMotor.getCurrentPosition());
+                }
             }
         }
     }
 
-    public void getRPM(){
-        RPM = Math.abs((shooter.getCurrentPosition())-prevPos)/1680*(1000/(lastTime-tele.getRuntime()));
+    public void aim(TEAMCOLOR color){
+        if(aiming){return;}
+        aiming = true;
+        aimingThread = new Thread(new _aim(color));
+    }
+
+    public void shoot(TEAMCOLOR color){
+        if(revved & onTarget){
+            //move blocker out of the way
+            //shoot
+            shooting = false;
+        } else {
+            aim(color);
+        }
+    }
+
+    public void updateRPM(){
+        RPM = Math.abs((shooter.getCurrentPosition())-prevPos)/1680*(1000/(lastTime-opMode.getRuntime()));
         prevPos = shooter.getCurrentPosition();
-        lastTime = tele.getRuntime();
+        lastTime = opMode.getRuntime();
+        revved = (Math.abs(shooterConstants.targetRPM - RPM) > shooterConstants.tolerance);
+        if(shooting && !revved) {
+            shooterPower = shooterConstants.Kp * (shooterConstants.targetRPM - RPM) + shooterConstants.Kv * (shooterConstants.targetRPM);
+            shooter.setPower(shooterPower);
+        }
     }
 }

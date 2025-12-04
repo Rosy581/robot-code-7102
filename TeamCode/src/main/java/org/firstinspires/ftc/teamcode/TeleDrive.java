@@ -19,9 +19,9 @@ public class TeleDrive extends LinearOpMode {
     private TEAMCOLOR teamColor = TEAMCOLOR.RED;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        turret             = new Turret(this, hardwareMap,"Turret","AimServo","Camera",telemetryM);
+        turret             = new Turret(this, hardwareMap,"Turret","AimServo","Shooter","Camera");
         DcMotor frontRight = hardwareMap.dcMotor.get("frontRight");
         DcMotor frontLeft  = hardwareMap.dcMotor.get("frontLeft");
         DcMotor backRight  = hardwareMap.dcMotor.get("backRight");
@@ -56,7 +56,7 @@ public class TeleDrive extends LinearOpMode {
             }
 
             if(gamepad1.rightBumperWasPressed()){
-                turret.shoot();
+                turret.shoot(teamColor);
             }
 
             if (gamepad1.psWasPressed()){
@@ -78,7 +78,8 @@ public class TeleDrive extends LinearOpMode {
             frontLeft.setPower(frontLeftPower);
             backRight.setPower(backRightPower);
             backLeft.setPower(backLeftPower);
-
+            turret.updateRPM();
+            turret.aim(teamColor);
             telemetryM.addData("RPM",turret.RPM);
             telemetryM.addData("intake speed",intakeSpeed);
             telemetryM.addData("Team Color",(teamColor == TEAMCOLOR.RED)?("Red"):("Blue"));
