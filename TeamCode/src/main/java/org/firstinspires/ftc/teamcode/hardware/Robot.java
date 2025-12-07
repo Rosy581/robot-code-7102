@@ -31,7 +31,7 @@ public class Robot {
     public boolean aiming = false;
     public boolean revved = false;
     public VisionPortal camView;
-    public final static double turretEncoderResolution = 145.1;
+//    public final static double turretEncoderResolution = 145.1;
     public double RPM = 0;
     public double shooterPower = 0;
     public DcMotorEx turretMotor;
@@ -42,7 +42,7 @@ public class Robot {
     public AprilTagProcessor aprilTag;
     public DcMotorEx shooter;
     public GoBildaPinpointDriver odo;
-    public final static double gearRatio = 48/198.0;
+//    public final static double gearRatio = 48/198.0;
     public final static int minPos = -1060;
     public final static int maxPos = - minPos;
     public final static Pose2D StartingPos= new Pose2D(DistanceUnit.INCH,72,72,AngleUnit.DEGREES,0);
@@ -90,6 +90,9 @@ public class Robot {
     //angle of wall is 125 degrees
     //blue team april tag ID = 20
     public void aim(TEAMCOLOR teamcolor) {
+        if(onTarget){
+            return;
+        }
         aiming = true;
         Pose2D target = teamcolor == TEAMCOLOR.RED?RedPos:BluePos;
         Pose2D position = odo.getPosition();
@@ -105,11 +108,11 @@ public class Robot {
     }
 
     public void shoot() {
-        if (! shooting) {
+        if (!shooting) {
             shooting = true;
         }
-        if (revved & onTarget) {
-
+        if (revved && onTarget) {
+            kicker.setPosition(1.0);
             shooting = false;
         }
     }
@@ -117,6 +120,7 @@ public class Robot {
     public void update(TEAMCOLOR teamcolor) {
         odo.update();
         RPM = shooter.getVelocity() / 28;
+        onTarget = Math.abs(turretMotor.getCurrentPosition()-turretMotor.getTargetPosition()) < turretMotor.getTargetPositionTolerance();
         revved = (shooterConstants.targetRPM - RPM) < shooterConstants.tolerance;
         if (shooting && ! revved) {
             shooter.setVelocity(shooterConstants.targetRPM * 28);
@@ -136,6 +140,8 @@ public class Robot {
                         }
                     }
                 }
+            } else {
+                onTarget = false;
             }
         }
     }
