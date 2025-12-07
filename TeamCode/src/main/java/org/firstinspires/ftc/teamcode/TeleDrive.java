@@ -32,8 +32,8 @@ public class TeleDrive extends LinearOpMode {
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        waitForStart();
         robot = new Robot(this, hardwareMap);
+        waitForStart();
         gamepad1.runLedEffect(GP.RedLights);
 
         while (opModeIsActive()) {
