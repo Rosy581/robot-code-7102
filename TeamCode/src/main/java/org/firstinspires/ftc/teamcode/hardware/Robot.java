@@ -17,12 +17,16 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.configurables.Config.shooterConstants;
 import org.firstinspires.ftc.teamcode.configurables.Config.motorNames;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
+import java.util.List;
+
 public class Robot {
     public boolean onTarget = false;
-    public static int target = 0;
+    public static int targetPosition = 0;
+    public double angle;
     public boolean shooting = false;
     public boolean aiming = false;
     public boolean revved = false;
@@ -34,16 +38,16 @@ public class Robot {
     public Servo aimServo1;
     public Servo aimServo2;
     public Servo kicker;
-    private final static float decimation = 2;
-    private AprilTagProcessor aprilTag;
-    private DcMotorEx shooter;
-    private GoBildaPinpointDriver odo;
-    private final static double gearRatio = 198/48.0;
-    private final static int minPos = 1060;
-    private final static int maxPos = - minPos;
-    private final static Pose2D StartingPos= new Pose2D(DistanceUnit.INCH,72,72,AngleUnit.DEGREES,0);
-    private final static Pose2D RedPos = new Pose2D(DistanceUnit.INCH, 9, 135, AngleUnit.DEGREES, 0);
-    private final static Pose2D BluePos = new Pose2D(DistanceUnit.INCH, 135, 135, AngleUnit.DEGREES, 0);
+    public final static float decimation = 2;
+    public AprilTagProcessor aprilTag;
+    public DcMotorEx shooter;
+    public GoBildaPinpointDriver odo;
+    public final static double gearRatio = 48/198.0;
+    public final static int minPos = -1060;
+    public final static int maxPos = - minPos;
+    public final static Pose2D StartingPos= new Pose2D(DistanceUnit.INCH,72,72,AngleUnit.DEGREES,0);
+    public final static Pose2D RedPos = new Pose2D(DistanceUnit.INCH, 9, 135, AngleUnit.DEGREES, 0);
+    public final static Pose2D BluePos = new Pose2D(DistanceUnit.INCH, 135, 135, AngleUnit.DEGREES, 0);
 
     public Robot(LinearOpMode _opMode, HardwareMap _hardwareMap) {
         turretMotor = _hardwareMap.get(DcMotorEx.class, motorNames.Turret);
@@ -54,6 +58,8 @@ public class Robot {
 
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        turretMotor.setTargetPosition(0);
+        turretMotor.setTargetPositionTolerance(10);
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         
         odo = _hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
@@ -84,10 +90,16 @@ public class Robot {
     //angle of wall is 125 degrees
     //blue team april tag ID = 20
     public void aim(TEAMCOLOR teamcolor) {
+        aiming = true;
         Pose2D target = teamcolor == TEAMCOLOR.RED?RedPos:BluePos;
         Pose2D position = odo.getPosition();
-        double angle = Math.atan((position.getX(DistanceUnit.INCH)-target.getX(DistanceUnit.INCH))/(position.getY(DistanceUnit.INCH)-target.getX(DistanceUnit.INCH)));
-        int targetPosition = (int) ((360 * angle/gearRatio)*turretEncoderResolution);
+        angle = Math.atan((position.getX(DistanceUnit.INCH)-target.getX(DistanceUnit.INCH))/(position.getY(DistanceUnit.INCH)-target.getY(DistanceUnit.INCH)))*(180/Math.PI);
+        targetPosition = (int) ((angle-position.getHeading(AngleUnit.DEGREES))*6.11111); // i apologize for my magical number it will not happen soon
+        if(targetPosition > maxPos){
+            targetPosition = minPos - (targetPosition + minPos);
+        } else if (targetPosition < minPos){
+            targetPosition = maxPos - (targetPosition + maxPos);
+        }
         turretMotor.setTargetPosition(targetPosition);
         turretMotor.setPower(0.25);
     }
@@ -102,7 +114,8 @@ public class Robot {
         }
     }
 
-    public void update() {
+    public void update(TEAMCOLOR teamcolor) {
+        odo.update();
         RPM = shooter.getVelocity() / 28;
         revved = (shooterConstants.targetRPM - RPM) < shooterConstants.tolerance;
         if (shooting && ! revved) {
@@ -110,6 +123,20 @@ public class Robot {
             shooter.setPower(1.0);
         } else {
             shooter.setPower(0.0);
+        }
+        if(aiming){
+            int targetId = (teamcolor == TEAMCOLOR.RED)?(24):(20);
+            List<AprilTagDetection> visableTags = aprilTag.getDetections();
+            if(!visableTags.isEmpty()){
+                for (AprilTagDetection tag : visableTags){
+                    if(tag.metadata != null){
+                        if(tag.id == targetId){
+                            turretMotor.setTargetPosition(turretMotor.getCurrentPosition());
+                            turretMotor.setPower(0);
+                        }
+                    }
+                }
+            }
         }
     }
 }
