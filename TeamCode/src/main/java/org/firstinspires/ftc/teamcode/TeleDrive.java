@@ -6,10 +6,11 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.teamcode.hardware.GP;
 import org.firstinspires.ftc.teamcode.hardware.Turret;
 import org.firstinspires.ftc.teamcode.hardware.Turret.TEAMCOLOR;
+import org.firstinspires.ftc.teamcode.configurables.Config.motorNames;
+
 
 @TeleOp(name="Main TeleOP", group="Tele")
 
@@ -21,34 +22,24 @@ public class TeleDrive extends LinearOpMode {
     @Override
     public void runOpMode() {
         TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        turret             = new Turret(this, hardwareMap,"Turret","AimServo","Shooter","Camera");
-        DcMotor frontRight = hardwareMap.dcMotor.get("frontRight");
-        DcMotor frontLeft  = hardwareMap.dcMotor.get("frontLeft");
-        DcMotor backRight  = hardwareMap.dcMotor.get("backRight");
-        DcMotor backLeft   = hardwareMap.dcMotor.get("backLeft");
-        DcMotor intake     = hardwareMap.dcMotor.get("intake");
-
-        CRServo feedingServo = hardwareMap.crservo.get("feedingServo");
+        turret             = new Turret(this, hardwareMap);
+        DcMotor frontRight = hardwareMap.dcMotor.get(motorNames.FrontRight);
+        DcMotor frontLeft  = hardwareMap.dcMotor.get(motorNames.FrontLeft);
+        DcMotor backRight  = hardwareMap.dcMotor.get(motorNames.BackRight);
+        DcMotor backLeft   = hardwareMap.dcMotor.get(motorNames.BackLeft);
+        DcMotor intake     = hardwareMap.dcMotor.get("Intake");
 
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        //intake.setDirection(DcMotorSimple.Direction.REVERSE);
-
         waitForStart();
+
+        gamepad1.runLedEffect(GP.RedLights);
 
         while (opModeIsActive()) {
             double x  =  gamepad1.left_stick_x;
             double y  = -gamepad1.left_stick_y;
             double rx =  gamepad1.right_stick_x;
-
-            if(gamepad1.leftBumperWasPressed()){
-                feedingServo.setPower(1.0);
-            } else if (gamepad1.left_trigger > 0.1){
-                feedingServo.setPower(-1.0);
-            } else {
-                feedingServo.setPower(0.0);
-            }
 
             if (gamepad1.squareWasPressed()) {
                 intakeSpeed = (intakeSpeed == 0)?1:0;
@@ -56,7 +47,7 @@ public class TeleDrive extends LinearOpMode {
             }
 
             if(gamepad1.rightBumperWasPressed()){
-                turret.shoot(teamColor);
+                turret.shoot();
             }
 
             if (gamepad1.psWasPressed()){
@@ -83,6 +74,17 @@ public class TeleDrive extends LinearOpMode {
             telemetryM.addData("RPM",turret.RPM);
             telemetryM.addData("intake speed",intakeSpeed);
             telemetryM.addData("Team Color",(teamColor == TEAMCOLOR.RED)?("Red"):("Blue"));
+            telemetryM.addData("shooting",turret.shooting);
+            telemetryM.addData("revved",turret.revved);
+            telemetryM.addData("aiming",turret.aiming);
+            telemetryM.addData("speed",turret.shooterPower);
+            telemetryM.addData("target",turret.target);
+            telemetryM.addData("position",turret.turretMotor.getCurrentPosition());
+            telemetryM.addData("one",turret.one);
+            telemetryM.addData("two",turret.two);
+            telemetryM.addData("three",turret.three);
+            telemetryM.addData("four",turret.four);
+            telemetryM.addData("five",turret.five);
             telemetryM.update(telemetry);
         }
     }
