@@ -27,7 +27,7 @@ public class Robot {
     public boolean aiming = false;
     public boolean revved = false;
     public VisionPortal camView;
-    public final static double encoderResolution = 145.1;
+    public final static double turretEncoderResolution = 145.1;
     public double RPM = 0;
     public double shooterPower = 0;
     public DcMotorEx turretMotor;
@@ -38,8 +38,10 @@ public class Robot {
     private AprilTagProcessor aprilTag;
     private DcMotorEx shooter;
     private GoBildaPinpointDriver odo;
+    private final static double gearRatio = 198/48.0;
     private final static int minPos = 1060;
     private final static int maxPos = - minPos;
+    private final static Pose2D StartingPos= new Pose2D(DistanceUnit.INCH,72,72,AngleUnit.DEGREES,0);
     private final static Pose2D RedPos = new Pose2D(DistanceUnit.INCH, 9, 135, AngleUnit.DEGREES, 0);
     private final static Pose2D BluePos = new Pose2D(DistanceUnit.INCH, 135, 135, AngleUnit.DEGREES, 0);
 
@@ -71,6 +73,7 @@ public class Robot {
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
         odo.resetPosAndIMU();
+        odo.setPosition(StartingPos);
     }
 
     public enum TEAMCOLOR {
@@ -83,8 +86,10 @@ public class Robot {
     public void aim(TEAMCOLOR teamcolor) {
         Pose2D target = teamcolor == TEAMCOLOR.RED?RedPos:BluePos;
         Pose2D position = odo.getPosition();
-        double Angle = Math.atan(Math.abs(position.getX(DistanceUnit.INCH)-target.getX(DistanceUnit.INCH))/Math.abs(position.getY(DistanceUnit.INCH)-target.getX(DistanceUnit.INCH)));
-        double targetPosition =
+        double angle = Math.atan((position.getX(DistanceUnit.INCH)-target.getX(DistanceUnit.INCH))/(position.getY(DistanceUnit.INCH)-target.getX(DistanceUnit.INCH)));
+        int targetPosition = (int) ((360 * angle/gearRatio)*turretEncoderResolution);
+        turretMotor.setTargetPosition(targetPosition);
+        turretMotor.setPower(0.25);
     }
 
     public void shoot() {
