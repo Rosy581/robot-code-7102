@@ -23,7 +23,7 @@ public class Config {
         public static String Camera     = "Webcam 1";
         public static String AimServo1 = "AimServo1";
         public static String AimServo2 = "AimServo2";
-        public static String BlockerServo = "Blocker";
+        public static String kickerServo = "kicker";
         public static String Shooter      = "Shooter";
     }
 }
