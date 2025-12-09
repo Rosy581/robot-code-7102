@@ -26,6 +26,8 @@ import org.opencv.core.Point;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import java.util.List;
+
 public class Robot {
     public static int target = 0;
     public Point point = new Point(0,0);
@@ -33,24 +35,23 @@ public class Robot {
     public boolean aiming = false;
     public boolean revved = false;
     public VisionPortal camView;
-    public final static double turretEncoderResolution = 537.7;
+//    public final static double turretEncoderResolution = 145.1;
     public double RPM = 0;
     public double shooterPower = 0;
     public DcMotorEx turretMotor;
     public Servo aimServo1;
     public Servo aimServo2;
     public Servo kicker;
-    private final static float decimation = 2;
-    private AprilTagProcessor aprilTag;
-    private DcMotorEx shooter;
-    private GoBildaPinpointDriver odo;
-    private final static double gearRatio = 198 / 48.0;
-    private final static int minPos = 1060;
-    private final static int maxPos = - minPos;
-    private final static Pose2D StartingPos = new Pose2D(DistanceUnit.INCH, 72, 8.5, AngleUnit.DEGREES, 0);
-    private final static Pose2D BluePos = new Pose2D(DistanceUnit.INCH, 9, 135, AngleUnit.DEGREES, 0);
-    private final static Pose2D RedPos = new Pose2D(DistanceUnit.INCH, 135, 135, AngleUnit.DEGREES, 0);
-    private Deadline rateLimit = new Deadline(1, TimeUnit.SECONDS);
+    public final static float decimation = 2;
+    public AprilTagProcessor aprilTag;
+    public DcMotorEx shooter;
+    public GoBildaPinpointDriver odo;
+//    public final static double gearRatio = 48/198.0;
+    public final static int minPos = -1060;
+    public final static int maxPos = - minPos;
+    public final static Pose2D StartingPos= new Pose2D(DistanceUnit.INCH,72,72,AngleUnit.DEGREES,0);
+    public final static Pose2D RedPos = new Pose2D(DistanceUnit.INCH, 9, 135, AngleUnit.DEGREES, 0);
+    public final static Pose2D BluePos = new Pose2D(DistanceUnit.INCH, 135, 135, AngleUnit.DEGREES, 0);
 
     public Robot(LinearOpMode _opMode, HardwareMap _hardwareMap) {
         turretMotor = _hardwareMap.get(DcMotorEx.class, motorNames.Turret);
@@ -62,7 +63,7 @@ public class Robot {
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         turretMotor.setTargetPosition(0);
-        turretMotor.setTargetPositionTolerance(15);
+        turretMotor.setTargetPositionTolerance(10);
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         odo = _hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");

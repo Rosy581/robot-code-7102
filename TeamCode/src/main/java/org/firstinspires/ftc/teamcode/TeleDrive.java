@@ -31,7 +31,6 @@ public class TeleDrive extends LinearOpMode {
 
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-
         robot = new Robot(this, hardwareMap);
         waitForStart();
         gamepad1.runLedEffect(GP.RedLights);
@@ -73,8 +72,8 @@ public class TeleDrive extends LinearOpMode {
             frontLeft.setPower(frontLeftPower);
             backRight.setPower(backRightPower);
             backLeft.setPower(backLeftPower);
-            robot.update();
             robot.aim(teamColor);
+            robot.update(teamColor);
             telemetryM.addData("RPM", robot.RPM);
             telemetryM.addData("intake speed", intakeSpeed);
             telemetryM.addData("Team Color", (teamColor == TEAMCOLOR.RED) ? ("Red") : ("Blue"));
@@ -85,6 +84,8 @@ public class TeleDrive extends LinearOpMode {
             telemetryM.addData("target", Robot.target);
             telemetryM.addData("position", robot.turretMotor.getCurrentPosition());
             telemetryM.addData("POINT",robot.point);
+            telemetryM.addData("target", Robot.targetPosition);
+            telemetryM.addData("turretRot", robot.turretMotor.getCurrentPosition());
             telemetryM.update(telemetry);
         }
     }
