@@ -21,12 +21,14 @@ import org.firstinspires.ftc.teamcode.configurables.Config.motorNames;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.opencv.core.Point;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class Robot {
     public static int target = 0;
+    public Point point = new Point(0,0);
     public boolean shooting = false;
     public boolean aiming = false;
     public boolean revved = false;
@@ -90,25 +92,36 @@ public class Robot {
 
     //angle of wall is 125 degrees
     //blue team april tag ID = 20
+    //red team april tag ID =24
+    // moving the turret counter clockwise is +
+    // moving the turret clock wise is -
     public void aim(TEAMCOLOR teamcolor) {
-        /*int targetedId = teamcolor == TEAMCOLOR.RED ? 24 : 20;
+        int targetedId = teamcolor == TEAMCOLOR.RED ? 24 : 20;
+        aiming = true;
+        if(!aiming){
+            return;
+        }
         ArrayList<AprilTagDetection> currentDetections = aprilTag.getDetections();
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
                 if (detection.id == targetedId) {
-                    if (Math.abs(detection.center.x - 640) < 100) {
-                        target = target + 100;
+                    point = detection.center;
+                    if(Math.abs(detection.center.x - 640)<100){
+                        target = turretMotor.getCurrentPosition();
+                        aiming = false;
                     }
                 }
             }
-        }*/
+        }
+    }
+    public void push(){
+        kicker.setPosition(1.0);
+        rateLimit.reset();
     }
 
     public void shoot() {
         shooting = ! shooting;
         if (revved) {
-            kicker.setPosition(1.0);
-            rateLimit.reset();
             shooting = false;
         }
     }
@@ -122,8 +135,12 @@ public class Robot {
         if (shooting && ! revved) {
             shooter.setVelocity(shooterConstants.targetRPM * 28);
             shooter.setPower(1.0);
-        } else {
+        } else if(!shooting && revved){
             shooter.setPower(0.0);
+        }
+        if (Math.abs(point.x - 640) > 100 && !turretMotor.isBusy()) {
+            target = target +  100 * ((point.x > 640)?1:-1);
+            turretMotor.setPower(1.0);
         }
     }
 }
