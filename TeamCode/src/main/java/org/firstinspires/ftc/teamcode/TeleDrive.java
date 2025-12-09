@@ -32,14 +32,13 @@ public class TeleDrive extends LinearOpMode {
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         robot = new Robot(this, hardwareMap);
-
         waitForStart();
         gamepad1.runLedEffect(GP.RedLights);
 
         while (opModeIsActive()) {
-            double x = gamepad1.left_stick_x;
-            double y = - gamepad1.left_stick_y;
-            double rx = gamepad1.right_stick_x;
+            double x = -gamepad1.left_stick_x;
+            double y = gamepad1.left_stick_y;
+            double rx = -gamepad1.right_stick_x;
 
             if (gamepad1.squareWasPressed()) {
                 intakeSpeed = (intakeSpeed == 0) ? 1 : 0;
@@ -48,6 +47,10 @@ public class TeleDrive extends LinearOpMode {
 
             if (gamepad1.rightBumperWasPressed()) {
                 robot.shoot();
+            }
+
+            if (gamepad1.right_trigger > 0.1){
+                robot.push();
             }
 
             if (gamepad1.psWasPressed()) {
@@ -78,11 +81,11 @@ public class TeleDrive extends LinearOpMode {
             telemetryM.addData("revved", robot.revved);
             telemetryM.addData("aiming", robot.aiming);
             telemetryM.addData("speed", robot.shooterPower);
+            telemetryM.addData("target", Robot.target);
+            telemetryM.addData("position", robot.turretMotor.getCurrentPosition());
+            telemetryM.addData("POINT",robot.point);
             telemetryM.addData("target", Robot.targetPosition);
             telemetryM.addData("turretRot", robot.turretMotor.getCurrentPosition());
-            telemetryM.addData("turret angle",robot.angle);
-            telemetryM.addData("position",robot.odo.getPosition());
-            telemetryM.addData("target position",robot.RedPos);
             telemetryM.update(telemetry);
         }
     }

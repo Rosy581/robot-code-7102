@@ -11,7 +11,7 @@ public class Config {
         public static double Kp = 0.0;
         public static double Kv = 0.0;
         public static double tolerance = 150;
-        public static double targetRPM = 4000;
+        public static double targetRPM = -3000;
     }
     @Configurable
     public static class motorNames{
@@ -23,7 +23,7 @@ public class Config {
         public static String Camera     = "Webcam 1";
         public static String AimServo1 = "AimServo1";
         public static String AimServo2 = "AimServo2";
-        public static String kickerServo = "kicker";
+        public static String kickerServo = "Blocker";
         public static String Shooter      = "Shooter";
     }
 }
