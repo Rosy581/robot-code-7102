@@ -2,66 +2,75 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import android.util.Size;
 
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.vision.VisionPortal;
+import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.internal.system.Deadline;
+import org.firstinspires.ftc.vision.VisionPortal;
 
 import org.firstinspires.ftc.teamcode.configurables.Config.shooterConstants;
 import org.firstinspires.ftc.teamcode.configurables.Config.motorNames;
+
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
-import java.util.List;
+import org.opencv.core.Point;
+
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class Robot {
-    public boolean onTarget = false;
-    public static int targetPosition = 0;
-    public double angle;
+    public static int target = 0;
+    public static double lastSeen = 0;
+    private final LinearOpMode opMode;
+    public Point point = new Point(0, 0);
     public boolean shooting = false;
     public boolean aiming = false;
     public boolean revved = false;
+    public boolean onTarget;
     public VisionPortal camView;
-//    public final static double turretEncoderResolution = 145.1;
+    public final static double turretEncoderResolution = 537.7;
     public double RPM = 0;
     public double shooterPower = 0;
     public DcMotorEx turretMotor;
     public Servo aimServo1;
     public Servo aimServo2;
     public Servo kicker;
-    public final static float decimation = 2;
-    public AprilTagProcessor aprilTag;
-    public DcMotorEx shooter;
-    public GoBildaPinpointDriver odo;
-//    public final static double gearRatio = 48/198.0;
-    public final static int minPos = -1060;
-    public final static int maxPos = - minPos;
-    public final static Pose2D StartingPos= new Pose2D(DistanceUnit.INCH,72,72,AngleUnit.DEGREES,0);
-    public final static Pose2D RedPos = new Pose2D(DistanceUnit.INCH, 9, 135, AngleUnit.DEGREES, 0);
-    public final static Pose2D BluePos = new Pose2D(DistanceUnit.INCH, 135, 135, AngleUnit.DEGREES, 0);
-
-    public Robot(LinearOpMode _opMode, HardwareMap _hardwareMap) {
+    private final static float decimation = 2;
+    private AprilTagProcessor aprilTag;
+    private DcMotorEx shooter;
+    private GoBildaPinpointDriver odo;
+    private final static double gearRatio = 198 / 48.0;
+    private final static int minPos = 1060;
+    private final static int maxPos = - minPos;
+    private final static Pose2D StartingPos = new Pose2D(DistanceUnit.INCH, 72, 8.5, AngleUnit.DEGREES, 0);
+    private Deadline rateLimit = new Deadline(1, TimeUnit.SECONDS);
+    public Robot(LinearOpMode _opMode, @NonNull HardwareMap _hardwareMap) {
         turretMotor = _hardwareMap.get(DcMotorEx.class, motorNames.Turret);
         aimServo1 = _hardwareMap.servo.get(motorNames.AimServo1);
         aimServo2 = _hardwareMap.servo.get(motorNames.AimServo2);
-        //kicker         = _hardwareMap.servo.get(motorNames.kickerServo);
+        kicker = _hardwareMap.servo.get(motorNames.kickerServo);
         shooter = _hardwareMap.get(DcMotorEx.class, motorNames.Shooter);
-
+        opMode = _opMode;
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         turretMotor.setTargetPosition(0);
-        turretMotor.setTargetPositionTolerance(10);
+        turretMotor.setTargetPositionTolerance(15);
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        
+
+        shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         odo = _hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
 
         Size resolution = new Size(1280, 720);
@@ -87,62 +96,70 @@ public class Robot {
         BLUE
     }
 
-    //angle of wall is 125 degrees
-    //blue team april tag ID = 20
-    public void aim(TEAMCOLOR teamcolor) {
-        if(onTarget){
-            return;
-        }
-        aiming = true;
-        Pose2D target = teamcolor == TEAMCOLOR.RED?RedPos:BluePos;
-        Pose2D position = odo.getPosition();
-        angle = Math.atan((position.getX(DistanceUnit.INCH)-target.getX(DistanceUnit.INCH))/(position.getY(DistanceUnit.INCH)-target.getY(DistanceUnit.INCH)))*(180/Math.PI);
-        targetPosition = (int) ((angle-position.getHeading(AngleUnit.DEGREES))*6.11111); // i apologize for my magical number it will not happen soon
-        if(targetPosition > maxPos){
-            targetPosition = minPos - (targetPosition + minPos);
-        } else if (targetPosition < minPos){
-            targetPosition = maxPos - (targetPosition + maxPos);
-        }
-        turretMotor.setTargetPosition(targetPosition);
-        turretMotor.setPower(0.25);
+
+    public void push() {
+        kicker.setPosition(1.0);
+        rateLimit.reset();
     }
 
     public void shoot() {
-        if (!shooting) {
-            shooting = true;
-        }
-        if (revved && onTarget) {
-            kicker.setPosition(1.0);
-            shooting = false;
-        }
+        shooting = !shooting;
     }
 
     public void update(TEAMCOLOR teamcolor) {
-        odo.update();
-        RPM = shooter.getVelocity() / 28;
-        onTarget = Math.abs(turretMotor.getCurrentPosition()-turretMotor.getTargetPosition()) < turretMotor.getTargetPositionTolerance();
-        revved = (shooterConstants.targetRPM - RPM) < shooterConstants.tolerance;
-        if (shooting && ! revved) {
-            shooter.setVelocity(shooterConstants.targetRPM * 28);
-            shooter.setPower(1.0);
-        } else {
-            shooter.setPower(0.0);
+        RPM = (shooter.getVelocity() / 28) * 60;
+        revved = Math.abs(shooterConstants.targetRPM - RPM) < shooterConstants.tolerance;
+        if (rateLimit.hasExpired()) {
+            kicker.setPosition(0.0);
         }
-        if(aiming){
-            int targetId = (teamcolor == TEAMCOLOR.RED)?(24):(20);
-            List<AprilTagDetection> visableTags = aprilTag.getDetections();
-            if(!visableTags.isEmpty()){
-                for (AprilTagDetection tag : visableTags){
-                    if(tag.metadata != null){
-                        if(tag.id == targetId){
-                            turretMotor.setTargetPosition(turretMotor.getCurrentPosition());
-                            turretMotor.setPower(0);
-                        }
+
+        if (shooting) {
+            shooter.setVelocity((shooterConstants.targetRPM/60) * 28);
+        } else if (!shooting) {
+            shooter.setVelocity(0.0);
+        }
+
+        //angle of wall is 125 degrees
+        //blue team april tag ID = 20
+        //red team april tag ID =24
+        // moving the turret counter clockwise is +
+        // moving the turret clock wise is -
+
+        if (Math.abs(point.x - 640) > 100) {
+            target = rotationToEncoder(lastSeen);
+            turretMotor.setPower(1.0);
+            onTarget = false;
+            int targetedId = teamcolor == TEAMCOLOR.RED ? 24 : 20;
+            aiming = true;
+            ArrayList<AprilTagDetection> currentDetections = aprilTag.getDetections();
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null) {
+                    if (detection.id == targetedId) {
+                        point = detection.center;
+                        opMode.telemetry.addData("tag",(point != null?(point.x):0));
                     }
                 }
-            } else {
-                onTarget = false;
             }
+            turretMotor.setTargetPosition(target);
+        } else {
+            onTarget = true;
+            lastSeen = getTurretRotation();
         }
+    }
+
+    public double encoderToRotation(int encoderPos) {
+        return ((encoderPos / turretEncoderResolution) * gearRatio) * 360 + odo.getHeading(AngleUnit.DEGREES);
+    }
+
+    public double getTurretRotation() {
+        return ((turretMotor.getCurrentPosition() / turretEncoderResolution) * gearRatio) * 360 + odo.getHeading(AngleUnit.DEGREES);
+    }
+
+    public int rotationToEncoder(double angle) {
+        return (int) ((angle - odo.getHeading(AngleUnit.DEGREES) / 360) / gearRatio * turretEncoderResolution);
+    }
+
+    public void turnToAngle(double angle) {
+        turretMotor.setTargetPosition(rotationToEncoder(angle));
     }
 }
