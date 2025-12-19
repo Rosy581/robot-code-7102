@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.GP;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.Robot.TEAMCOLOR;
@@ -54,6 +55,10 @@ public class TeleDrive extends LinearOpMode {
                 robot.push();
             }
 
+            if(gamepad2.crossWasPressed()){
+                robot.turnToAngle(0);
+            }
+
             if (gamepad1.psWasPressed()) {
                 teamColor = (teamColor == TEAMCOLOR.RED) ? TEAMCOLOR.BLUE : TEAMCOLOR.RED;
                 if (teamColor == TEAMCOLOR.RED) {
@@ -84,7 +89,8 @@ public class TeleDrive extends LinearOpMode {
             telemetryM.addData("speed", robot.shooterPower);
             telemetryM.addData("target", Robot.target);
             telemetryM.addData("position", robot.turretMotor.getCurrentPosition());
-            telemetryM.addData("POINT",robot.point);
+            telemetryM.addData("TAG POSITION",robot.point);
+            telemetryM.addData("odo",robot.odo.getHeading(AngleUnit.DEGREES));
             telemetryM.addData("f",robot.getTurretRotation());
             telemetryM.update(telemetry);
         }

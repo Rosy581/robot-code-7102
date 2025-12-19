@@ -49,12 +49,13 @@ public class Robot {
     private final static float decimation = 2;
     private AprilTagProcessor aprilTag;
     private DcMotorEx shooter;
-    private GoBildaPinpointDriver odo;
+    public GoBildaPinpointDriver odo;
     private final static double gearRatio = 198 / 48.0;
     private final static int minPos = 1060;
     private final static int maxPos = - minPos;
     private final static Pose2D StartingPos = new Pose2D(DistanceUnit.INCH, 72, 8.5, AngleUnit.DEGREES, 0);
-    private Deadline rateLimit = new Deadline(1, TimeUnit.SECONDS);
+    private Deadline rateLimit = new Deadline(500, TimeUnit.MICROSECONDS);
+
     public Robot(LinearOpMode _opMode, @NonNull HardwareMap _hardwareMap) {
         turretMotor = _hardwareMap.get(DcMotorEx.class, motorNames.Turret);
         aimServo1 = _hardwareMap.servo.get(motorNames.AimServo1);
@@ -103,7 +104,7 @@ public class Robot {
     }
 
     public void shoot() {
-        shooting = !shooting;
+        shooting = ! shooting;
     }
 
     public void update(TEAMCOLOR teamcolor) {
@@ -114,7 +115,7 @@ public class Robot {
         }
 
         if (shooting) {
-            shooter.setVelocity((shooterConstants.targetRPM/60) * 28);
+            shooter.setVelocity((shooterConstants.targetRPM / 60) * 28);
         } else if (!shooting) {
             shooter.setVelocity(0.0);
         }
@@ -126,21 +127,23 @@ public class Robot {
         // moving the turret clock wise is -
 
         if (Math.abs(point.x - 640) > 100) {
-            target = rotationToEncoder(lastSeen);
+            odo.update();
             turretMotor.setPower(1.0);
             onTarget = false;
             int targetedId = teamcolor == TEAMCOLOR.RED ? 24 : 20;
             aiming = true;
             ArrayList<AprilTagDetection> currentDetections = aprilTag.getDetections();
-            for (AprilTagDetection detection : currentDetections) {
-                if (detection.metadata != null) {
-                    if (detection.id == targetedId) {
-                        point = detection.center;
-                        opMode.telemetry.addData("tag",(point != null?(point.x):0));
+            if (currentDetections.isEmpty()) {
+                turnToAngle(lastSeen);
+            } else {
+                for (AprilTagDetection detection : currentDetections) {
+                    if (detection.metadata != null) {
+                        if (detection.id == targetedId) {
+                            point = detection.center;
+                        }
                     }
                 }
             }
-            turretMotor.setTargetPosition(target);
         } else {
             onTarget = true;
             lastSeen = getTurretRotation();
@@ -152,7 +155,7 @@ public class Robot {
     }
 
     public double getTurretRotation() {
-        return ((turretMotor.getCurrentPosition() / turretEncoderResolution) * gearRatio) * 360 + odo.getHeading(AngleUnit.DEGREES);
+        return encoderToRotation(turretMotor.getCurrentPosition());
     }
 
     public int rotationToEncoder(double angle) {
@@ -161,5 +164,6 @@ public class Robot {
 
     public void turnToAngle(double angle) {
         turretMotor.setTargetPosition(rotationToEncoder(angle));
+        turretMotor.setPower(1.0);
     }
 }
