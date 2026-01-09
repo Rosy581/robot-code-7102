@@ -8,10 +8,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.hardware.GP;
+import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.Robot.TEAMCOLOR;
-import org.firstinspires.ftc.teamcode.configurables.Config.motorNames;
+import org.firstinspires.ftc.teamcode.configurables.Config.partNames;
+
+import java.util.concurrent.TimeUnit;
 
 
 @TeleOp(name = "Main TeleOP", group = "Tele")
@@ -19,36 +21,39 @@ import org.firstinspires.ftc.teamcode.configurables.Config.motorNames;
 public class TeleDrive extends LinearOpMode {
     Robot robot;
     private double intakeSpeed = 0;
+    private double feederPower = 0;
     private TEAMCOLOR teamColor = TEAMCOLOR.RED;
-
+    private Deadline pushTime = new Deadline(500, TimeUnit.MILLISECONDS);
     @Override
     public void runOpMode() {
         TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        DcMotor frontRight = hardwareMap.dcMotor.get(motorNames.FrontRight);
-        DcMotor frontLeft = hardwareMap.dcMotor.get(motorNames.FrontLeft);
-        DcMotor backRight = hardwareMap.dcMotor.get(motorNames.BackRight);
-        DcMotor backLeft = hardwareMap.dcMotor.get(motorNames.BackLeft);
+        DcMotor frontRight = hardwareMap.dcMotor.get(partNames.FrontRight);
+        DcMotor frontLeft = hardwareMap.dcMotor.get(partNames.FrontLeft);
+        DcMotor backRight = hardwareMap.dcMotor.get(partNames.BackRight);
+        DcMotor backLeft = hardwareMap.dcMotor.get(partNames.BackLeft);
         DcMotor intake = hardwareMap.dcMotor.get("Intake");
 
-        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         robot = new Robot(this, hardwareMap);
         waitForStart();
-        gamepad1.runLedEffect(GP.RedLights);
+//        gamepad1.runLedEffect(GP.RedLights);
 
         while (opModeIsActive()) {
-            double x = -gamepad1.left_stick_x;
-            double y = gamepad1.left_stick_y;
-            double rx = -gamepad1.right_stick_x;
+            double x = gamepad1.left_stick_x;
+            double y = -gamepad1.left_stick_y;
+            double rx = gamepad1.right_stick_x;
 
             if (gamepad1.squareWasPressed()) {
-                intakeSpeed = (intakeSpeed == 0) ? 1 : 0;
+                intakeSpeed = (intakeSpeed == 1 ? 0 : 1);
                 intake.setPower(intakeSpeed);
             }
 
             if (gamepad1.rightBumperWasPressed()) {
                 robot.shoot();
+                intakeSpeed = 0;
+                intake.setPower(intakeSpeed);
             }
 
             if (gamepad1.right_trigger > 0.1){
@@ -59,6 +64,12 @@ public class TeleDrive extends LinearOpMode {
                 robot.turnToAngle(0);
             }
 
+            if(gamepad1.triangleWasPressed()){
+                feederPower = (feederPower == 1 ? 0 : 1);
+                robot.feeder.setPower(feederPower);
+            }
+
+            /*
             if (gamepad1.psWasPressed()) {
                 teamColor = (teamColor == TEAMCOLOR.RED) ? TEAMCOLOR.BLUE : TEAMCOLOR.RED;
                 if (teamColor == TEAMCOLOR.RED) {
@@ -67,6 +78,8 @@ public class TeleDrive extends LinearOpMode {
                     gamepad1.runLedEffect(GP.BlueLights);
                 }
             }
+            */
+
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1);
             double frontRightPower = (y - x - rx) / denominator;
@@ -94,5 +107,12 @@ public class TeleDrive extends LinearOpMode {
             telemetryM.addData("f",robot.getTurretRotation());
             telemetryM.update(telemetry);
         }
+    }
+    void updateIntake(DcMotor intake){
+        intakeSpeed = (intakeSpeed == 1 ? 0 : 1);
+        intake.setPower(intakeSpeed);
+    }
+    void updateIntake(DcMotor intake,double speed){
+        intake.setPower(speed);
     }
 }

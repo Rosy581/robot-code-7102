@@ -5,6 +5,7 @@ import android.util.Size;
 import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,7 +19,7 @@ import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 import org.firstinspires.ftc.teamcode.configurables.Config.shooterConstants;
-import org.firstinspires.ftc.teamcode.configurables.Config.motorNames;
+import org.firstinspires.ftc.teamcode.configurables.Config.partNames;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -43,6 +44,11 @@ public class Robot {
     public double RPM = 0;
     public double shooterPower = 0;
     public DcMotorEx turretMotor;
+    public DcMotor frontRight;
+    public DcMotor frontLeft;
+    public DcMotor backRight;
+    public DcMotor backLeft;
+    public DcMotor feeder;
     public Servo aimServo1;
     public Servo aimServo2;
     public Servo kicker;
@@ -57,11 +63,18 @@ public class Robot {
     private Deadline rateLimit = new Deadline(500, TimeUnit.MICROSECONDS);
 
     public Robot(LinearOpMode _opMode, @NonNull HardwareMap _hardwareMap) {
-        turretMotor = _hardwareMap.get(DcMotorEx.class, motorNames.Turret);
-        aimServo1 = _hardwareMap.servo.get(motorNames.AimServo1);
-        aimServo2 = _hardwareMap.servo.get(motorNames.AimServo2);
-        kicker = _hardwareMap.servo.get(motorNames.kickerServo);
-        shooter = _hardwareMap.get(DcMotorEx.class, motorNames.Shooter);
+        frontRight = _hardwareMap.dcMotor.get(partNames.FrontRight);
+        frontLeft = _hardwareMap.dcMotor.get(partNames.FrontLeft);
+        backRight = _hardwareMap.dcMotor.get(partNames.BackRight);
+        backLeft = _hardwareMap.dcMotor.get(partNames.BackLeft);
+        turretMotor = _hardwareMap.get(DcMotorEx.class, partNames.Turret);
+        aimServo1 = _hardwareMap.servo.get(partNames.AimServo1);
+        aimServo2 = _hardwareMap.servo.get(partNames.AimServo2);
+        kicker = _hardwareMap.servo.get(partNames.kickerServo);
+        shooter = _hardwareMap.get(DcMotorEx.class, partNames.Shooter);
+
+        feeder = _hardwareMap.dcMotor.get(partNames.feeder);
+
         opMode = _opMode;
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -71,6 +84,11 @@ public class Robot {
 
         shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        feeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         odo = _hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
 
@@ -113,7 +131,7 @@ public class Robot {
         if (rateLimit.hasExpired()) {
             kicker.setPosition(0.0);
         }
-
+        odo.update();
         if (shooting) {
             shooter.setVelocity((shooterConstants.targetRPM / 60) * 28);
         } else if (!shooting) {
@@ -125,9 +143,8 @@ public class Robot {
         //red team april tag ID =24
         // moving the turret counter clockwise is +
         // moving the turret clock wise is -
-
+        /*
         if (Math.abs(point.x - 640) > 100) {
-            odo.update();
             turretMotor.setPower(1.0);
             onTarget = false;
             int targetedId = teamcolor == TEAMCOLOR.RED ? 24 : 20;
@@ -147,7 +164,7 @@ public class Robot {
         } else {
             onTarget = true;
             lastSeen = getTurretRotation();
-        }
+        }*/
     }
 
     public double encoderToRotation(int encoderPos) {
@@ -165,5 +182,11 @@ public class Robot {
     public void turnToAngle(double angle) {
         turretMotor.setTargetPosition(rotationToEncoder(angle));
         turretMotor.setPower(1.0);
+    }
+    public void configureMotorsZeroPower(DcMotor.ZeroPowerBehavior zeroPowerBehavior){
+        frontLeft.setZeroPowerBehavior(zeroPowerBehavior);
+        frontRight.setZeroPowerBehavior(zeroPowerBehavior);
+        backLeft.setZeroPowerBehavior(zeroPowerBehavior);
+        backRight.setZeroPowerBehavior(zeroPowerBehavior);
     }
 }
