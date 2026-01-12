@@ -23,7 +23,6 @@ public class TeleDrive extends LinearOpMode {
     private double intakeSpeed = 0;
     private double feederPower = 0;
     private TEAMCOLOR teamColor = TEAMCOLOR.RED;
-    private Deadline pushTime = new Deadline(500, TimeUnit.MILLISECONDS);
     @Override
     public void runOpMode() {
         TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -50,36 +49,16 @@ public class TeleDrive extends LinearOpMode {
                 intake.setPower(intakeSpeed);
             }
 
-            if (gamepad1.rightBumperWasPressed()) {
+            if (gamepad2.rightBumperWasPressed()) {
                 robot.shoot();
                 intakeSpeed = 0;
                 intake.setPower(intakeSpeed);
             }
 
-            if (gamepad1.right_trigger > 0.1){
-                robot.push();
-            }
-
-            if(gamepad2.crossWasPressed()){
-                robot.turnToAngle(0);
-            }
-
-            if(gamepad1.triangleWasPressed()){
+            if(gamepad2.squareWasPressed()){
                 feederPower = (feederPower == 1 ? 0 : 1);
                 robot.feeder.setPower(feederPower);
             }
-
-            /*
-            if (gamepad1.psWasPressed()) {
-                teamColor = (teamColor == TEAMCOLOR.RED) ? TEAMCOLOR.BLUE : TEAMCOLOR.RED;
-                if (teamColor == TEAMCOLOR.RED) {
-                    gamepad1.runLedEffect(GP.RedLights);
-                } else {
-                    gamepad1.runLedEffect(GP.BlueLights);
-                }
-            }
-            */
-
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1);
             double frontRightPower = (y - x - rx) / denominator;

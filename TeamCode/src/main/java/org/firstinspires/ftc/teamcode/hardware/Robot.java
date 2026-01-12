@@ -51,7 +51,6 @@ public class Robot {
     public DcMotor feeder;
     public Servo aimServo1;
     public Servo aimServo2;
-    public Servo kicker;
     private final static float decimation = 2;
     private AprilTagProcessor aprilTag;
     private DcMotorEx shooter;
@@ -70,7 +69,6 @@ public class Robot {
         turretMotor = _hardwareMap.get(DcMotorEx.class, partNames.Turret);
         aimServo1 = _hardwareMap.servo.get(partNames.AimServo1);
         aimServo2 = _hardwareMap.servo.get(partNames.AimServo2);
-        kicker = _hardwareMap.servo.get(partNames.kickerServo);
         shooter = _hardwareMap.get(DcMotorEx.class, partNames.Shooter);
 
         feeder = _hardwareMap.dcMotor.get(partNames.feeder);
@@ -115,12 +113,6 @@ public class Robot {
         BLUE
     }
 
-
-    public void push() {
-        kicker.setPosition(1.0);
-        rateLimit.reset();
-    }
-
     public void shoot() {
         shooting = ! shooting;
     }
@@ -128,9 +120,7 @@ public class Robot {
     public void update(TEAMCOLOR teamcolor) {
         RPM = (shooter.getVelocity() / 28) * 60;
         revved = Math.abs(shooterConstants.targetRPM - RPM) < shooterConstants.tolerance;
-        if (rateLimit.hasExpired()) {
-            kicker.setPosition(0.0);
-        }
+
         odo.update();
         if (shooting) {
             shooter.setVelocity((shooterConstants.targetRPM / 60) * 28);

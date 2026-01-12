@@ -22,7 +22,6 @@ public class Config {
         public static String Camera = "Webcam 1";
         public static String AimServo1 = "AimServo1";
         public static String AimServo2 = "AimServo2";
-        public static String kickerServo = "Blocker";
         public static String Shooter = "Shooter";
         public static String feeder = "Feeder";
     }
