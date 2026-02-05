@@ -6,8 +6,6 @@ import com.bylazar.configurables.annotations.Configurable;
 public class Config {
     @Configurable
     public static class shooterConstants {
-        public static double Kp = 0.0;
-        public static double Kv = 0.0;
         public static double tolerance = 150;
         public static double targetRPM = - 3000;
     }
@@ -23,6 +21,9 @@ public class Config {
         public static String AimServo1 = "AimServo1";
         public static String AimServo2 = "AimServo2";
         public static String Shooter = "Shooter";
-        public static String feeder = "Feeder";
+        public static String Feeder = "Feeder";
+        public static String Blocker = "Blocker";
+        public static String Odometry = "pinpoint";
+        public static String Intake = "Intake";
     }
 }

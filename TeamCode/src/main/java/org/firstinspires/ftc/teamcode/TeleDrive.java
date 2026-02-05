@@ -8,12 +8,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.internal.system.Deadline;
+import org.firstinspires.ftc.teamcode.hardware.GP;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.Robot.TEAMCOLOR;
 import org.firstinspires.ftc.teamcode.configurables.Config.partNames;
-
-import java.util.concurrent.TimeUnit;
 
 
 @TeleOp(name = "Main TeleOP", group = "Tele")
@@ -23,75 +21,58 @@ public class TeleDrive extends LinearOpMode {
     private double intakeSpeed = 0;
     private double feederPower = 0;
     private TEAMCOLOR teamColor = TEAMCOLOR.RED;
+
     @Override
     public void runOpMode() {
         TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        DcMotor frontRight = hardwareMap.dcMotor.get(partNames.FrontRight);
-        DcMotor frontLeft = hardwareMap.dcMotor.get(partNames.FrontLeft);
-        DcMotor backRight = hardwareMap.dcMotor.get(partNames.BackRight);
-        DcMotor backLeft = hardwareMap.dcMotor.get(partNames.BackLeft);
-        DcMotor intake = hardwareMap.dcMotor.get("Intake");
 
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        robot = new Robot(this, hardwareMap);
+        robot = new Robot(hardwareMap);
+        robot.configureMotorsZeroPower(DcMotor.ZeroPowerBehavior.BRAKE);
         waitForStart();
-//        gamepad1.runLedEffect(GP.RedLights);
-
+        gamepad1.runLedEffect(GP.RedLights);
+        robot.aiming = true;
         while (opModeIsActive()) {
             double x = gamepad1.left_stick_x;
-            double y = -gamepad1.left_stick_y;
+            double y = - gamepad1.left_stick_y;
             double rx = gamepad1.right_stick_x;
 
             if (gamepad1.squareWasPressed()) {
                 intakeSpeed = (intakeSpeed == 1 ? 0 : 1);
-                intake.setPower(intakeSpeed);
+                robot.intake.setPower(intakeSpeed);
             }
 
             if (gamepad2.rightBumperWasPressed()) {
                 robot.shoot();
                 intakeSpeed = 0;
-                intake.setPower(intakeSpeed);
+                robot.intake.setPower(intakeSpeed);
             }
 
-            if(gamepad2.squareWasPressed()){
+            if (gamepad2.squareWasPressed()) {
                 feederPower = (feederPower == 1 ? 0 : 1);
                 robot.feeder.setPower(feederPower);
             }
 
-            double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1);
-            double frontRightPower = (y - x - rx) / denominator;
-            double frontLeftPower = (y + x + rx) / denominator;
-            double backRightPower = (y + x - rx) / denominator;
-            double backLeftPower = (y - x + rx) / denominator;
+            if(gamepad2.leftBumperWasPressed()){
+                robot.aim(teamColor);
+            }
 
-            frontRight.setPower(frontRightPower);
-            frontLeft.setPower(frontLeftPower);
-            backRight.setPower(backRightPower);
-            backLeft.setPower(backLeftPower);
+            if(gamepad2.dpadDownWasPressed()){
+                robot.odo.setPosition(teamColor == TEAMCOLOR.RED?Robot.RedCorner:Robot.BlueCorner);
+            }
 
+            if(gamepad1.psWasPressed()){
+                teamColor = teamColor == TEAMCOLOR.RED ? TEAMCOLOR.BLUE : TEAMCOLOR.RED;
+                gamepad1.runLedEffect(teamColor == TEAMCOLOR.RED ? GP.RedLights : GP.BlueLights);
+            }
+
+            robot.mecanumDrive(x,y,rx);
             robot.update(teamColor);
             telemetryM.addData("RPM", robot.RPM);
-            telemetryM.addData("intake speed", intakeSpeed);
             telemetryM.addData("Team Color", (teamColor == TEAMCOLOR.RED) ? ("Red") : ("Blue"));
-            telemetryM.addData("shooting", robot.shooting);
-            telemetryM.addData("revved", robot.revved);
-            telemetryM.addData("aiming", robot.aiming);
-            telemetryM.addData("speed", robot.shooterPower);
-            telemetryM.addData("target", Robot.target);
-            telemetryM.addData("position", robot.turretMotor.getCurrentPosition());
-            telemetryM.addData("TAG POSITION",robot.point);
-            telemetryM.addData("odo",robot.odo.getHeading(AngleUnit.DEGREES));
-            telemetryM.addData("f",robot.getTurretRotation());
+            telemetryM.addData("heading", robot.odo.getHeading(AngleUnit.DEGREES));
+            telemetryM.addData("turret rotation", robot.getTurretRotation());
+            telemetryM.addData("fuck WILL",robot.turretMotor.getCurrentPosition());
             telemetryM.update(telemetry);
         }
-    }
-    void updateIntake(DcMotor intake){
-        intakeSpeed = (intakeSpeed == 1 ? 0 : 1);
-        intake.setPower(intakeSpeed);
-    }
-    void updateIntake(DcMotor intake,double speed){
-        intake.setPower(speed);
     }
 }

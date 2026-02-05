@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 @Autonomous(name = "Sensor: GoBilda Pinpoint")
 public class TestAuto extends LinearOpMode {
     GoBildaPinpointDriver pinpoint;
-    Robot robot = new Robot(this, hardwareMap);
+    Robot robot = new Robot(hardwareMap);
     @Override
     public void runOpMode() throws InterruptedException {
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
