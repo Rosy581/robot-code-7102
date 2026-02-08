@@ -1,13 +1,16 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import android.util.Size;
+
 import androidx.annotation.NonNull;
+
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -18,6 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.opencv.core.Point;
+
 import java.util.ArrayList;
 
 public class Robot {
@@ -48,24 +52,24 @@ public class Robot {
     private final static double gearRatio = 35.0 / 110.0;
     private final static int minPos = 1060;
     private final static int maxPos = - minPos;
-    private final static Pose2D RedTarget = new Pose2D(DistanceUnit.INCH,144,144,AngleUnit.RADIANS,0);
-    private final static Pose2D BlueTarget = new Pose2D(DistanceUnit.INCH,0,144,AngleUnit.RADIANS,0);
-    public final static Pose2D RedCorner = new Pose2D(DistanceUnit.INCH,6.5,8.5,AngleUnit.DEGREES,0);
-    public final static Pose2D BlueCorner = new Pose2D(DistanceUnit.INCH,6.5,8.5,AngleUnit.DEGREES,0);
-    public static final  Size resolution = new Size(1280, 720);
+    private final static Pose2D RedTarget = new Pose2D(DistanceUnit.INCH, 144, 144, AngleUnit.RADIANS, 0);
+    private final static Pose2D BlueTarget = new Pose2D(DistanceUnit.INCH, 0, 144, AngleUnit.RADIANS, 0);
+    public final static Pose2D RedCorner = new Pose2D(DistanceUnit.INCH, 6.5, 8.5, AngleUnit.DEGREES, 0);
+    public final static Pose2D BlueCorner = new Pose2D(DistanceUnit.INCH, 6.5, 8.5, AngleUnit.DEGREES, 0);
+    public static final Size resolution = new Size(1280, 720);
 
     public Robot(@NonNull HardwareMap _hardwareMap) {
         frontRight = _hardwareMap.dcMotor.get(partNames.FrontRight);
-        frontLeft  = _hardwareMap.dcMotor.get(partNames.FrontLeft);
-        backRight  = _hardwareMap.dcMotor.get(partNames.BackRight);
-        backLeft   = _hardwareMap.dcMotor.get(partNames.BackLeft);
-        turretMotor= _hardwareMap.get(DcMotorEx.class, partNames.Turret);
-        aimServo1  = _hardwareMap.servo.get(partNames.AimServo1);
-        aimServo2  = _hardwareMap.servo.get(partNames.AimServo2);
-        shooter    = _hardwareMap.get(DcMotorEx.class, partNames.Shooter);
-        blocker    = _hardwareMap.servo.get(partNames.Blocker);
-        feeder     = _hardwareMap.dcMotor.get(partNames.Feeder);
-        intake     = _hardwareMap.dcMotor.get(partNames.Intake);
+        frontLeft = _hardwareMap.dcMotor.get(partNames.FrontLeft);
+        backRight = _hardwareMap.dcMotor.get(partNames.BackRight);
+        backLeft = _hardwareMap.dcMotor.get(partNames.BackLeft);
+        turretMotor = _hardwareMap.get(DcMotorEx.class, partNames.Turret);
+        aimServo1 = _hardwareMap.servo.get(partNames.AimServo1);
+        aimServo2 = _hardwareMap.servo.get(partNames.AimServo2);
+        shooter = _hardwareMap.get(DcMotorEx.class, partNames.Shooter);
+        blocker = _hardwareMap.servo.get(partNames.Blocker);
+        feeder = _hardwareMap.dcMotor.get(partNames.Feeder);
+        intake = _hardwareMap.dcMotor.get(partNames.Intake);
 
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -81,7 +85,6 @@ public class Robot {
         feeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         odo = _hardwareMap.get(GoBildaPinpointDriver.class, partNames.Odometry);
-
 
 
         aprilTag = new AprilTagProcessor.Builder().build();
@@ -105,8 +108,8 @@ public class Robot {
     }
 
     public void shoot() {
-        shooting = !shooting;
-        if(shooting){
+        shooting = ! shooting;
+        if (shooting) {
             blocker.setPosition(0.45);
         } else {
             blocker.setPosition(0);
@@ -130,10 +133,12 @@ public class Robot {
         if (aiming) {
             int targetedId = teamcolor == TEAMCOLOR.RED ? 24 : 20;
             ArrayList <AprilTagDetection> currentDetections = aprilTag.getDetections();
-            if (currentDetections.isEmpty()){
-                //aim(teamcolor);
+            if (currentDetections.isEmpty()) {
+                if(Math.abs(aim(teamcolor))>180){
+                    //fuck
+                }
             } else {
-                for (AprilTagDetection detection : currentDetections) {#
+                for (AprilTagDetection detection : currentDetections) {
                     //noinspection UnnecessaryBoxing
                     if (detection.id == Integer.valueOf(targetedId)) {
                         point = detection.center;
@@ -142,13 +147,14 @@ public class Robot {
                             turretMotor.setTargetPosition(turretMotor.getCurrentPosition());
                             lastSeen = getTurretRotation();
                         } else {
-                            double difference = point.x/(resolution.getWidth()/78.0);
+                            double difference = point.x / (resolution.getWidth() / 78.0);
                         }
                     }
                 }
             }
         }
     }
+
     public double encoderToRotation(int encoderPos) {
         return ((encoderPos / turretEncoderResolution) * gearRatio) * 360 + odo.getHeading(AngleUnit.DEGREES);
     }
@@ -158,36 +164,41 @@ public class Robot {
     }
 
     public int rotationToEncoder(double angle) {
-        return (int) ((angle - odo.getHeading(AngleUnit.DEGREES) / 360) / gearRatio * turretEncoderResolution);
+        return (int) (((angle - odo.getHeading(AngleUnit.DEGREES)) * turretEncoderResolution) / (360 * gearRatio));
     }
 
-    public void aim(Pose2D target) {
+    public double aim(Pose2D target) {
         Pose2D pos = odo.getPosition();
         double x = (target.getX(DistanceUnit.INCH) - pos.getX(DistanceUnit.INCH));
         double y = (target.getY(DistanceUnit.INCH) - pos.getY(DistanceUnit.INCH));
         double dist = Math.sqrt((x * x) + (y * y));
         double angle = Math.toDegrees(Math.atan(y / x));
         turnToAngle(angle);
+        return angle;
     }
-    public void aim(TEAMCOLOR teamcolor){
-        aim(teamcolor == TEAMCOLOR.RED?RedTarget:BlueTarget);
+
+    public double aim(TEAMCOLOR teamcolor) {
+        return aim(teamcolor == TEAMCOLOR.RED ? RedTarget : BlueTarget);
     }
+
     public void turnToAngle(double angle) {
         turretMotor.setTargetPosition(rotationToEncoder(angle));
         turretMotor.setPower(1.0);
     }
-    public void configureMotorsZeroPower(DcMotor.ZeroPowerBehavior zeroPowerBehavior){
+
+    public void configureMotorsZeroPower(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
         frontLeft.setZeroPowerBehavior(zeroPowerBehavior);
         frontRight.setZeroPowerBehavior(zeroPowerBehavior);
         backLeft.setZeroPowerBehavior(zeroPowerBehavior);
         backRight.setZeroPowerBehavior(zeroPowerBehavior);
     }
-    public void mecanumDrive(double x, double y, double rx){
+
+    public void mecanumDrive(double x, double y, double rx) {
         double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1);
         double frontRightPower = (y - x - rx) / denominator;
-        double frontLeftPower  = (y + x + rx) / denominator;
-        double backRightPower  = (y + x - rx) / denominator;
-        double backLeftPower   = (y - x + rx) / denominator;
+        double frontLeftPower = (y + x + rx) / denominator;
+        double backRightPower = (y + x - rx) / denominator;
+        double backLeftPower = (y - x + rx) / denominator;
 
         frontRight.setPower(frontRightPower);
         frontLeft.setPower(frontLeftPower);
