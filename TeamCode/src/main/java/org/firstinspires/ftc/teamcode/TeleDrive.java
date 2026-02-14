@@ -33,6 +33,7 @@ public class TeleDrive extends LinearOpMode {
             double x = gamepad1.left_stick_x;
             double y = - gamepad1.left_stick_y;
             double rx = gamepad1.right_stick_x;
+            double heading = robot.odo.getHeading(AngleUnit.DEGREES);
 
             if (gamepad1.squareWasPressed()) {
                 intakeSpeed = (intakeSpeed == 1 ? 0 : 1);
@@ -41,26 +42,21 @@ public class TeleDrive extends LinearOpMode {
 
             if (gamepad2.rightBumperWasPressed()) {
                 robot.shoot();
-                intakeSpeed = 0;
-                robot.intake.setPower(intakeSpeed);
-            }
-
-            if (gamepad2.squareWasPressed()) {
-                feederPower = (feederPower == 1 ? 0 : 1);
-                robot.feeder.setPower(feederPower);
             }
 
             if (gamepad2.leftBumperWasPressed()) {
-                robot.aim(teamColor);
+                robot.turnToAngle(heading);
+                robot.toggleAim();
             }
 
             if (gamepad2.dpadDownWasPressed()) {
                 robot.odo.setPosition(teamColor == TEAMCOLOR.RED ? Robot.RedCorner : Robot.BlueCorner);
             }
 
-            if (gamepad1.psWasPressed()) {
+            if (gamepad1.psWasPressed() || gamepad2.psWasPressed()) {
                 teamColor = teamColor == TEAMCOLOR.RED ? TEAMCOLOR.BLUE : TEAMCOLOR.RED;
                 gamepad1.runLedEffect(teamColor == TEAMCOLOR.RED ? GP.RedLights : GP.BlueLights);
+                gamepad2.runLedEffect(teamColor == TEAMCOLOR.RED ? GP.RedLights : GP.BlueLights);
             }
 
             robot.mecanumDrive(x, y, rx);
@@ -69,7 +65,7 @@ public class TeleDrive extends LinearOpMode {
             telemetryM.addData("Team Color", (teamColor == TEAMCOLOR.RED) ? ("Red") : ("Blue"));
             telemetryM.addData("heading", robot.odo.getHeading(AngleUnit.DEGREES));
             telemetryM.addData("turret rotation", robot.getTurretRotation());
-            telemetryM.addData("fuck WILL", robot.turretMotor.getCurrentPosition());
+            telemetryM.addData("angle",robot.angle);
             telemetryM.update(telemetry);
         }
     }

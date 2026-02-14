@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.configurables.Config;
+
 @Autonomous
 
 public class Forward extends LinearOpMode {
@@ -16,10 +18,10 @@ public class Forward extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException  {
-        frontRight   = hardwareMap.dcMotor.get("FrontRight");
-        frontLeft	 = hardwareMap.dcMotor.get("FrontLeft");
-        backRight  	 = hardwareMap.dcMotor.get("BackRight");
-        backLeft 	 = hardwareMap.dcMotor.get("BackLeft");
+        frontRight   = hardwareMap.dcMotor.get(Config.partNames.FrontRight);
+        frontLeft	 = hardwareMap.dcMotor.get(Config.partNames.FrontLeft);
+        backRight  	 = hardwareMap.dcMotor.get(Config.partNames.BackRight);
+        backLeft 	 = hardwareMap.dcMotor.get(Config.partNames.BackLeft);
 
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
