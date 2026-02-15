@@ -26,6 +26,7 @@ public class TeleDrive extends LinearOpMode {
         TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         robot = new Robot(hardwareMap);
+        robot.configOdo();
         robot.configureMotorsZeroPower(DcMotor.ZeroPowerBehavior.BRAKE);
         waitForStart();
         gamepad1.runLedEffect(GP.RedLights);

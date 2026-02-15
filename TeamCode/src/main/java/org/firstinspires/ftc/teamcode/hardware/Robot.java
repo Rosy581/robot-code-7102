@@ -90,16 +90,17 @@ public class Robot {
                 .build();
 
         aprilTag.setDecimation(decimation);
+    }
+    public enum TEAMCOLOR {
+        RED,
+        BLUE
+    }
 
+    public void configOdo() {
         odo.setOffsets(0, 6.5, DistanceUnit.INCH);
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
         odo.resetPosAndIMU();
-    }
-
-    public enum TEAMCOLOR {
-        RED,
-        BLUE
     }
 
     public void toggleShootingDistance(){
