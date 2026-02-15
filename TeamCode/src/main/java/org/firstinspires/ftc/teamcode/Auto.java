@@ -4,20 +4,24 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.bylazar.telemetry.PanelsTelemetry;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.geometry.Pose;
 
-@Autonomous(name = "Pedro Auto", group = "Autonomous")
+@Autonomous(name = "Pedro Pathing Autonomous", group = "Autonomous")
 @Configurable // Panels
 public class Auto extends OpMode {
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance
     public Follower follower; // Pedro Pathing follower instance
-    private int pathState = 0; // Current autonomous path state (state machine)
+    private int pathState; // Current autonomous path state (state machine)
     private Paths paths; // Paths defined in the Paths class
+    private Robot robot;
 
     @Override
     public void init() {
@@ -30,12 +34,13 @@ public class Auto extends OpMode {
 
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.update(telemetry);
+        robot = new Robot(hardwareMap);
     }
 
     @Override
     public void loop() {
         follower.update(); // Update Pedro Pathing
-        autonomousPathUpdate(); // Update autonomous state machine
+        pathState = autonomousPathUpdate(); // Update autonomous state machine
 
         // Log values to Panels and Driver Station
         panelsTelemetry.debug("Path State", pathState);
@@ -47,38 +52,98 @@ public class Auto extends OpMode {
 
 
     public static class Paths {
-
-        public PathChain ShootingPosition;
-        public PathChain StopPos;
+        public PathChain Path1;
+        public PathChain Path2;
+        public PathChain Path3;
+        public PathChain Path4;
+        public PathChain Path5;
+        public PathChain Path6;
+        public PathChain Path7;
 
         public Paths(Follower follower) {
-            ShootingPosition = follower.pathBuilder().addPath(
+            Path1 = follower.pathBuilder().addPath(
                             new BezierLine(
                                     new Pose(56.000, 8.000),
 
                                     new Pose(56.000, 20.000)
                             )
-                    ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(107))
+                    ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(90))
 
                     .build();
 
-            StopPos = follower.pathBuilder().addPath(
+            Path2 = follower.pathBuilder().addPath(
                             new BezierLine(
                                     new Pose(56.000, 20.000),
 
-                                    new Pose(56.000, 63.000)
+                                    new Pose(56.000, 36.000)
                             )
-                    ).setLinearHeadingInterpolation(Math.toRadians(107), Math.toRadians(90))
+                    ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(180))
+
+                    .build();
+
+            Path3 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(56.000, 36.000),
+
+                                    new Pose(12.000, 36.000)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+
+                    .build();
+
+            Path4 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(12.000, 36.000),
+
+                                    new Pose(56.000, 8.000)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(90))
+
+                    .build();
+
+            Path5 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(56.000, 8.000),
+
+                                    new Pose(56.000, 60.000)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(180))
+
+                    .build();
+
+            Path6 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(56.000, 60.000),
+
+                                    new Pose(12.000, 60.000)
+                            )
+                    ).setTangentHeadingInterpolation()
+
+                    .build();
+
+            Path7 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(12.000, 60.000),
+
+                                    new Pose(56.000, 8.000)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(90))
 
                     .build();
         }
     }
 
 
-    public void autonomousPathUpdate() {
+    public int autonomousPathUpdate() {
         switch (pathState) {
             case 0:
                 break;
+            default:
+                return -2;
         }
+        // Add your state machine Here
+        // Access paths with paths.pathName
+        // Refer to the Pedro Pathing Docs (Auto Example) for an example state machine
+        return - 1;
     }
 }

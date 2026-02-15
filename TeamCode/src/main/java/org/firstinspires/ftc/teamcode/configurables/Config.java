@@ -7,7 +7,8 @@ public class Config {
     @Configurable
     public static class shooterConstants {
         public static double tolerance = 150;
-        public static double targetRPM = - 3000;
+        public static double targetRPMfar = - 4500;
+        public static double targetRPMclose = - 3750;
     }
 
     @Configurable
@@ -21,8 +22,8 @@ public class Config {
         public static String AimServo1 = "AimServo1";
         public static String AimServo2 = "AimServo2";
         public static String Shooter = "Shooter";
-        public static String Blocker = "Blocker";
         public static String Odometry = "pinpoint";
         public static String Intake = "Intake";
+        public static String Feeder = "Feeder ";
     }
 }

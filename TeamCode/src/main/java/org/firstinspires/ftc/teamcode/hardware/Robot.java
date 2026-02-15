@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
@@ -25,7 +24,6 @@ import org.opencv.core.Point;
 import java.util.ArrayList;
 
 public class Robot {
-    public double lastSeen = 0;
     public double angle = 0;
     public Point point = new Point(0, 0);
     public boolean shooting = false;
@@ -34,6 +32,7 @@ public class Robot {
     public boolean turning = false;
     public boolean onTarget;
     public VisionPortal camView;
+    public double targetRPM = shooterConstants.targetRPMclose;
     public double RPM = 0;
     public DcMotorEx turretMotor;
     public DcMotor frontRight;
@@ -41,9 +40,7 @@ public class Robot {
     public DcMotor backRight;
     public DcMotor backLeft;
     public DcMotor intake;
-    public Servo aimServo1;
-    public Servo aimServo2;
-    public Servo blocker;
+    public DcMotor feeder;
     private final static float decimation = 2;
     private AprilTagProcessor aprilTag;
     private DcMotorEx shooter;
@@ -63,17 +60,18 @@ public class Robot {
         backRight = _hardwareMap.dcMotor.get(partNames.BackRight);
         backLeft = _hardwareMap.dcMotor.get(partNames.BackLeft);
         turretMotor = _hardwareMap.get(DcMotorEx.class, partNames.Turret);
-        aimServo1 = _hardwareMap.servo.get(partNames.AimServo1);
-        aimServo2 = _hardwareMap.servo.get(partNames.AimServo2);
         shooter = _hardwareMap.get(DcMotorEx.class, partNames.Shooter);
-        blocker = _hardwareMap.servo.get(partNames.Blocker);
         intake = _hardwareMap.dcMotor.get(partNames.Intake);
+        feeder = _hardwareMap.dcMotor.get(partNames.Feeder);
 
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretMotor.setTargetPosition(0);
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         turretMotor.setPower(1);
+
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        feeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -104,33 +102,37 @@ public class Robot {
         BLUE
     }
 
+    public void toggleShootingDistance(){
+        targetRPM = targetRPM == shooterConstants.targetRPMclose ? shooterConstants.targetRPMfar : shooterConstants.targetRPMclose;
+    }
     public void toggleAim(){
         aiming = !aiming;
     }
 
     public void shoot() {
         shooting = ! shooting;
-        if (shooting) {
-            blocker.setPosition(0.45);
-            intake.setPower(0.0);
-        } else {
-            blocker.setPosition(0);
-        }
     }
 
     public void update(TEAMCOLOR teamColor) {
         odo.update();
 
         RPM = (shooter.getVelocity() / 28) * 60;
-        revved = Math.abs(shooterConstants.targetRPM - RPM) < shooterConstants.tolerance;
+        revved = Math.abs(targetRPM - RPM) < shooterConstants.tolerance;
 
         turning = turretMotor.isBusy();
 
         if (shooting) {
-            shooter.setVelocity((shooterConstants.targetRPM / 60) * 28);
+            shooter.setVelocity((targetRPM / 60) * 28);
         } else {
             shooter.setVelocity(0.0);
         }
+
+        if(revved && shooting){
+            feeder.setPower(1);
+        } else {
+            feeder.setPower(0);
+        }
+
         // moving the turret counter clockwise is +
         // moving the turret clock wise is -
         // cam fov is 78 deg
@@ -147,7 +149,6 @@ public class Robot {
                         onTarget = (Math.abs(point.x - ((double) resolution.getWidth() / 2)) < 50);
                         if (onTarget) {
                             turretMotor.setTargetPosition(turretMotor.getCurrentPosition());
-                            lastSeen = getTurretRotation();
                         } else if(!turning){
                             double difference = 38-((point.x / (resolution.getWidth()) * 78.0));
                             turnToAngle(getTurretRotation()-difference);

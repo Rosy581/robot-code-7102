@@ -5,6 +5,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.GP;
@@ -17,7 +18,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot.TEAMCOLOR;
 public class TeleDrive extends LinearOpMode {
     Robot robot;
     private double intakeSpeed = 0;
-    private double feederPower = 0;
+    double angle = 0;
     private TEAMCOLOR teamColor = TEAMCOLOR.RED;
 
     @Override
@@ -35,9 +36,19 @@ public class TeleDrive extends LinearOpMode {
             double rx = gamepad1.right_stick_x;
             double heading = robot.odo.getHeading(AngleUnit.DEGREES);
 
-            if (gamepad1.squareWasPressed()) {
+            if (gamepad1.squareWasPressed() || gamepad2.squareWasPressed()) {
                 intakeSpeed = (intakeSpeed == 1 ? 0 : 1);
                 robot.intake.setPower(intakeSpeed);
+            }
+
+            if (gamepad1.psWasPressed() || gamepad2.psWasPressed()) {
+                teamColor = teamColor == TEAMCOLOR.RED ? TEAMCOLOR.BLUE : TEAMCOLOR.RED;
+                gamepad1.runLedEffect(teamColor == TEAMCOLOR.RED ? GP.RedLights : GP.BlueLights);
+                gamepad2.runLedEffect(teamColor == TEAMCOLOR.RED ? GP.RedLights : GP.BlueLights);
+            }
+
+            if(gamepad2.circleWasPressed()){
+                robot.toggleShootingDistance();
             }
 
             if (gamepad2.rightBumperWasPressed()) {
@@ -53,10 +64,24 @@ public class TeleDrive extends LinearOpMode {
                 robot.odo.setPosition(teamColor == TEAMCOLOR.RED ? Robot.RedCorner : Robot.BlueCorner);
             }
 
-            if (gamepad1.psWasPressed() || gamepad2.psWasPressed()) {
-                teamColor = teamColor == TEAMCOLOR.RED ? TEAMCOLOR.BLUE : TEAMCOLOR.RED;
-                gamepad1.runLedEffect(teamColor == TEAMCOLOR.RED ? GP.RedLights : GP.BlueLights);
-                gamepad2.runLedEffect(teamColor == TEAMCOLOR.RED ? GP.RedLights : GP.BlueLights);
+            if(gamepad2.dpadLeftWasPressed()){
+                robot.aiming = false;
+                robot.turnToAngle(heading+angle);
+                angle += 2;
+            }
+
+            if(gamepad2.dpadRightWasPressed()){
+                robot.aiming = false;
+                robot.turnToAngle(heading+angle);
+                angle -= 2;
+
+            }
+
+            if(gamepad2.dpadUpWasPressed()){
+                robot.aiming = false;
+                robot.turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                robot.turretMotor.setTargetPosition(0);
+                robot.turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
 
             robot.mecanumDrive(x, y, rx);
