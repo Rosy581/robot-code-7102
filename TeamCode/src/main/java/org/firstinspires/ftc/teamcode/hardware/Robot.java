@@ -25,7 +25,6 @@ import java.util.ArrayList;
 
 public class Robot {
     public double angle = 0;
-    public Point point = new Point(0, 0);
     public boolean shooting = false;
     public boolean aiming = false;
     public boolean revved = false;
@@ -48,11 +47,11 @@ public class Robot {
 
     public final static double turretEncoderResolution = 537.7;
     private final static double gearRatio = 35.0 / 110.0;
-    private final static Pose2D RedTarget = new Pose2D(DistanceUnit.INCH, 138, 138, AngleUnit.DEGREES, 0);
-    private final static Pose2D BlueTarget = new Pose2D(DistanceUnit.INCH, 0, 138, AngleUnit.DEGREES, 0);
+    private final static Pose2D RedTarget = new Pose2D(DistanceUnit.INCH, 144, 144, AngleUnit.DEGREES, 0);
+    private final static Pose2D BlueTarget = new Pose2D(DistanceUnit.INCH, 3, 144, AngleUnit.DEGREES, 0);
     public final static Pose2D RedCorner = new Pose2D(DistanceUnit.INCH, 6.5, 8.5, AngleUnit.DEGREES, 0);
-    public final static Pose2D BlueCorner = new Pose2D(DistanceUnit.INCH, 6.5, 8.5, AngleUnit.DEGREES, 0);
-    public static final Size resolution = new Size(1280, 720);
+    public final static Pose2D BlueCorner = new Pose2D(DistanceUnit.INCH, 137.5, 8.5, AngleUnit.DEGREES, 0);
+    public static final Size resolution = new Size(800, 600);
 
     public Robot(@NonNull HardwareMap _hardwareMap) {
         frontRight = _hardwareMap.dcMotor.get(partNames.FrontRight);
@@ -63,7 +62,6 @@ public class Robot {
         shooter = _hardwareMap.get(DcMotorEx.class, partNames.Shooter);
         intake = _hardwareMap.dcMotor.get(partNames.Intake);
         feeder = _hardwareMap.dcMotor.get(partNames.Feeder);
-
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretMotor.setTargetPosition(0);
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -138,26 +136,25 @@ public class Robot {
         // moving the turret clock wise is -
         // cam fov is 78 deg
         if (aiming) {
-            int targetedId = teamColor == TEAMCOLOR.RED ? 24 : 20;
-            ArrayList <AprilTagDetection> currentDetections = aprilTag.getDetections();
-            if (currentDetections.isEmpty()) {
+//            int targetedId = teamColor == TEAMCOLOR.RED ? 24 : 20;
+//            ArrayList <AprilTagDetection> currentDetections = aprilTag.getDetections();
+//            if (currentDetections.isEmpty()) {
                 angle = aimAtPos(teamColor);
-            } else {
+            }/* else {
                 for (AprilTagDetection detection : currentDetections) {
-                    //noinspection UnnecessaryBoxing
                     if (detection.id == Integer.valueOf(targetedId)) {
                         point = detection.center;
                         onTarget = (Math.abs(point.x - ((double) resolution.getWidth() / 2)) < 50);
                         if (onTarget) {
                             turretMotor.setTargetPosition(turretMotor.getCurrentPosition());
                         } else if(!turning){
-                            double difference = 38-((point.x / (resolution.getWidth()) * 78.0));
+                            double difference = 38+((point.x / (resolution.getWidth()) * 54.0));
                             turnToAngle(getTurretRotation()-difference);
                         }
                     }
                 }
             }
-        }
+        }*/
     }
 
     public double encoderToRotation(int encoderPos) {
@@ -174,7 +171,7 @@ public class Robot {
         Pose2D pos = odo.getPosition();
         double x = Math.abs((target.getX(DistanceUnit.INCH) - pos.getX(DistanceUnit.INCH)));
         double y = Math.abs((target.getY(DistanceUnit.INCH) - pos.getY(DistanceUnit.INCH)));
-        double angle = Math.toDegrees(Math.atan(y / x)) * (pos.getX(DistanceUnit.INCH) < x ? -1 : 1) ;
+        double angle = Math.toDegrees(Math.atan(x / y)) * (pos.getX(DistanceUnit.INCH) < x ? -1 : 1) ;
         turnToAngle(angle);
         return angle;
     }

@@ -5,9 +5,10 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.GP;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.Robot.TEAMCOLOR;
@@ -31,6 +32,7 @@ public class TeleDrive extends LinearOpMode {
         waitForStart();
         gamepad1.runLedEffect(GP.RedLights);
         robot.aiming = true;
+        robot.odo.setPosition(new Pose2D(DistanceUnit.INCH,89,25,AngleUnit.DEGREES,0));
         while (opModeIsActive()) {
             double x = gamepad1.left_stick_x;
             double y = - gamepad1.left_stick_y;
