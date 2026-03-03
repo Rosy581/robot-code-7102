@@ -161,7 +161,7 @@ public class Robot {
         return ((encoderPos / turretEncoderResolution) * gearRatio) * 360 + odo.getHeading(AngleUnit.DEGREES);
     }
     public int rotationToEncoder(double angle) {
-        return (int) (((angle - odo.getHeading(AngleUnit.DEGREES)) * turretEncoderResolution) / (360 * gearRatio));
+        return (int) ((angle - odo.getHeading(AngleUnit.DEGREES)) / (360 * gearRatio)*turretEncoderResolution);
     }
 
     public double getTurretRotation() {
