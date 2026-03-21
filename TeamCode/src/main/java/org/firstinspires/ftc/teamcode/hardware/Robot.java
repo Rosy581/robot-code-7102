@@ -140,7 +140,8 @@ public class Robot {
 //            ArrayList <AprilTagDetection> currentDetections = aprilTag.getDetections();
 //            if (currentDetections.isEmpty()) {
                 angle = aimAtPos(teamColor);
-            }/* else {
+            }
+        /* else {
                 for (AprilTagDetection detection : currentDetections) {
                     if (detection.id == Integer.valueOf(targetedId)) {
                         point = detection.center;
