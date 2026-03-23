@@ -19,10 +19,15 @@ public class OUTREACH extends LinearOpMode {
         robot.aiming = false;
         waitForStart();
         while (opModeIsActive()) {
-            double x = gamepad1.left_stick_x;
-            double y = - gamepad1.left_stick_y;
-            double rx = gamepad1.right_stick_x;
-            robot.mecanumDrive(x, y, rx);
+            double x = gamepad1.left_stick_x*0.5;
+            double y = - gamepad1.left_stick_y*0.5;
+            double rx = gamepad1.right_stick_x*0.5;
+
+            if(gamepad1.bWasPressed()){
+                robot.toggleIntake();
+            }
+
+            robot.fieldCentricMecanumDrive(x, y, rx);
         }
     }
 }

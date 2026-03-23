@@ -40,8 +40,7 @@ public class TeleDrive extends LinearOpMode {
             double heading = robot.odo.getHeading(AngleUnit.DEGREES);
 
             if (gamepad1.squareWasPressed() || gamepad2.squareWasPressed()) {
-                intakeSpeed = (intakeSpeed == 1 ? 0 : 1);
-                robot.intake.setPower(intakeSpeed);
+
             }
 
             if (gamepad1.psWasPressed() || gamepad2.psWasPressed()) {

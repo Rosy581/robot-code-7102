@@ -43,6 +43,7 @@ public class Robot {
     private final static float decimation = 2;
     private AprilTagProcessor aprilTag;
     private DcMotorEx shooter;
+    private double intakeSpeed = 0;
     public GoBildaPinpointDriver odo;
 
     public final static double turretEncoderResolution = 537.7;
@@ -193,12 +194,32 @@ public class Robot {
         backRight.setZeroPowerBehavior(zeroPowerBehavior);
     }
 
+    public void toggleIntake(){
+        intakeSpeed = (intakeSpeed == 1 ? 0 : 1);
+        intake.setPower(intakeSpeed);
+    }
+
     public void mecanumDrive(double x, double y, double rx) {
         double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1);
         double frontRightPower = (y - x - rx) / denominator;
         double frontLeftPower = (y + x + rx) / denominator;
         double backRightPower = (y + x - rx) / denominator;
         double backLeftPower = (y - x + rx) / denominator;
+
+        frontRight.setPower(frontRightPower);
+        frontLeft.setPower(frontLeftPower);
+        backRight.setPower(backRightPower);
+        backLeft.setPower(backLeftPower);
+    }
+    public void fieldCentricMecanumDrive(double x, double y, double rx){
+        double botHeading = odo.getHeading(AngleUnit.RADIANS);
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+        double frontLeftPower = (rotY + rotX + rx) / denominator;
+        double backLeftPower = (rotY - rotX + rx) / denominator;
+        double frontRightPower = (rotY - rotX - rx) / denominator;
+        double backRightPower = (rotY + rotX - rx) / denominator;
 
         frontRight.setPower(frontRightPower);
         frontLeft.setPower(frontLeftPower);
