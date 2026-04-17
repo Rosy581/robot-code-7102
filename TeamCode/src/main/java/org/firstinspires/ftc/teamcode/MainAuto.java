@@ -24,7 +24,7 @@ public class MainAuto extends OpMode {
     private int pathState; // Current autonomous path state (state machine)
     private Path paths; // Paths defined in the Paths class
     private Robot robot;
-    private Timer pathTimer, elapsedTimer;
+    private Timer pathTimer;
 
     @Override
     public void init() {
@@ -35,7 +35,6 @@ public class MainAuto extends OpMode {
 
         paths = new Path(follower, Config.autoColor.teamcolor);
         pathTimer = new Timer();
-        elapsedTimer.resetTimer();
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.update(telemetry);
         robot = new Robot(hardwareMap);

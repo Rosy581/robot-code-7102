@@ -29,12 +29,14 @@ public class Constants {
             .maxPower(1)
             .rightFrontMotorName(Config.partNames.FrontRight)
             .rightRearMotorName(Config.partNames.BackRight)
-            .leftRearMotorName(Config.partNames.FrontLeft)
-            .leftFrontMotorName(Config.partNames.BackLeft)
-            .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE);
+            .leftRearMotorName(Config.partNames.BackLeft)
+            .leftFrontMotorName(Config.partNames.FrontLeft)
+            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .xVelocity(60.23016934132013)
+            .yVelocity(46.40817380890133);
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)

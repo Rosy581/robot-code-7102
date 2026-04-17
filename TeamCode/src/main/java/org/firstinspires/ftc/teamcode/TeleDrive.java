@@ -40,7 +40,7 @@ public class TeleDrive extends LinearOpMode {
             double heading = robot.odo.getHeading(AngleUnit.DEGREES);
 
             if (gamepad1.squareWasPressed() || gamepad2.squareWasPressed()) {
-
+                robot.toggleIntake();
             }
 
             if (gamepad1.psWasPressed() || gamepad2.psWasPressed()) {
@@ -93,6 +93,7 @@ public class TeleDrive extends LinearOpMode {
             telemetryM.addData("heading", robot.odo.getHeading(AngleUnit.DEGREES));
             telemetryM.addData("turret rotation", robot.getTurretRotation());
             telemetryM.addData("angle",robot.angle);
+            telemetryM.addData("Shooing",robot.shooting);
             telemetryM.update(telemetry);
         }
     }
