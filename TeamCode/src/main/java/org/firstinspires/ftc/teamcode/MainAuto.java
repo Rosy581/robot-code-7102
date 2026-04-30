@@ -91,12 +91,12 @@ public class MainAuto extends OpMode {
                 if(!follower.isBusy()) {
                     robot.aimAtPos(Robot.BlueCorner);
                     robot.shoot();
-                    robot.intake.setPower(1);
+                    robot.toggleIntake();//on
                     next();
                 }
             case 2:
                 if(pathTimer.getElapsedTimeSeconds()>=3) {
-                    robot.intake.setPower(0);
+                    robot.toggleIntake();//off
                     robot.shoot();
                     follower.followPath(paths.Path2);
                     next();
@@ -104,21 +104,21 @@ public class MainAuto extends OpMode {
                 break;
             case 3:
                 if(!follower.isBusy()){
-                    robot.intake.setPower(1);
+                    robot.toggleIntake();//on
                     follower.followPath(paths.Path3);
                     next();
                 }
             case 4:
                 if(!follower.isBusy()){
                     follower.followPath(paths.Path4);
-                    robot.intake.setPower(0);
+                    robot.toggleIntake();//off
                     next();
                 }
                 break;
             case 5:
                 robot.aimAtPos(Robot.BlueCorner);
                 robot.shoot();
-                robot.intake.setPower(1);
+                robot.toggleIntake();//on
                 next();
                 break;
             default:

@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-import android.util.Size;
-
 import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -10,18 +8,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.teamcode.configurables.Config.shooterConstants;
 import org.firstinspires.ftc.teamcode.configurables.Config.partNames;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-import org.opencv.core.Point;
-
-import java.util.ArrayList;
 
 public class Robot {
     public double angle = 0;
@@ -29,8 +20,6 @@ public class Robot {
     public boolean aiming = false;
     public boolean revved = false;
     public boolean turning = false;
-    public boolean onTarget;
-    public VisionPortal camView;
     public double targetRPM = shooterConstants.targetRPMclose;
     public double RPM = 0;
     public DcMotorEx turretMotor;
@@ -38,21 +27,18 @@ public class Robot {
     public DcMotor frontLeft;
     public DcMotor backRight;
     public DcMotor backLeft;
-    public DcMotor intake;
+    private DcMotor intake;
     public DcMotor feeder;
-    private final static float decimation = 2;
-    private AprilTagProcessor aprilTag;
     private DcMotorEx shooter;
     private double intakeSpeed = 0;
-    public GoBildaPinpointDriver odo;
+    private GoBildaPinpointDriver odo;
 
     public final static double turretEncoderResolution = 537.7;
     private final static double gearRatio = 35.0 / 110.0;
     private final static Pose2D RedTarget = new Pose2D(DistanceUnit.INCH, 144, 144, AngleUnit.DEGREES, 0);
-    private final static Pose2D BlueTarget = new Pose2D(DistanceUnit.INCH, 3, 144, AngleUnit.DEGREES, 0);
-    public final static Pose2D RedCorner = new Pose2D(DistanceUnit.INCH, 6.5, 8.5, AngleUnit.DEGREES, 0);
-    public final static Pose2D BlueCorner = new Pose2D(DistanceUnit.INCH, 137.5, 8.5, AngleUnit.DEGREES, 0);
-    public static final Size resolution = new Size(800, 600);
+    private final static Pose2D BlueTarget = new Pose2D(DistanceUnit.INCH, 144, 3, AngleUnit.DEGREES, 0);
+    public final static Pose2D RedCorner  = new Pose2D(DistanceUnit.INCH, 6.5, 8.5, AngleUnit.DEGREES, 0);
+    public final static Pose2D BlueCorner = new Pose2D(DistanceUnit.INCH, 137.5,8.5 , AngleUnit.DEGREES, 0);
 
     public Robot(@NonNull HardwareMap _hardwareMap) {
         frontRight = _hardwareMap.dcMotor.get(partNames.FrontRight);
@@ -79,16 +65,6 @@ public class Robot {
         frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         odo = _hardwareMap.get(GoBildaPinpointDriver.class, partNames.Odometry);
-
-
-        aprilTag = new AprilTagProcessor.Builder().build();
-        camView = new VisionPortal.Builder()
-                .setCameraResolution(resolution)
-                .setCamera(_hardwareMap.get(WebcamName.class, partNames.Camera))
-                .addProcessor(aprilTag)
-                .build();
-
-        aprilTag.setDecimation(decimation);
     }
     public enum TEAMCOLOR {
         RED,
@@ -98,7 +74,7 @@ public class Robot {
     public void configOdo() {
         odo.setOffsets(0, 6.5, DistanceUnit.INCH);
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
         odo.resetPosAndIMU();
     }
 
@@ -133,37 +109,16 @@ public class Robot {
             feeder.setPower(0);
         }
 
-        // moving the turret counter clockwise is +
-        // moving the turret clock wise is -
-        // cam fov is 78 deg
         if (aiming) {
-//            int targetedId = teamColor == TEAMCOLOR.RED ? 24 : 20;
-//            ArrayList <AprilTagDetection> currentDetections = aprilTag.getDetections();
-//            if (currentDetections.isEmpty()) {
-                angle = aimAtPos(teamColor);
-            }
-        /* else {
-                for (AprilTagDetection detection : currentDetections) {
-                    if (detection.id == Integer.valueOf(targetedId)) {
-                        point = detection.center;
-                        onTarget = (Math.abs(point.x - ((double) resolution.getWidth() / 2)) < 50);
-                        if (onTarget) {
-                            turretMotor.setTargetPosition(turretMotor.getCurrentPosition());
-                        } else if(!turning){
-                            double difference = 38+((point.x / (resolution.getWidth()) * 54.0));
-                            turnToAngle(getTurretRotation()-difference);
-                        }
-                    }
-                }
-            }
-        }*/
+            angle = aimAtPos(teamColor);
+        }
     }
 
     public double encoderToRotation(int encoderPos) {
-        return ((encoderPos / turretEncoderResolution) * gearRatio) * 360 + odo.getHeading(AngleUnit.DEGREES);
+        return (((encoderPos/turretEncoderResolution)*gearRatio) * 360) + odo.getHeading(AngleUnit.DEGREES);
     }
     public int rotationToEncoder(double angle) {
-        return (int) (((angle - odo.getHeading(AngleUnit.DEGREES)) * turretEncoderResolution) / (360 * gearRatio));
+        return (int) (((angle-getHeading())/(360*gearRatio))*turretEncoderResolution);
     }
 
     public double getTurretRotation() {
@@ -173,7 +128,7 @@ public class Robot {
         Pose2D pos = odo.getPosition();
         double x = Math.abs((target.getX(DistanceUnit.INCH) - pos.getX(DistanceUnit.INCH)));
         double y = Math.abs((target.getY(DistanceUnit.INCH) - pos.getY(DistanceUnit.INCH)));
-        double angle = Math.toDegrees(Math.atan(x / y)) * (pos.getX(DistanceUnit.INCH) < x ? -1 : 1) ;
+        double angle = Math.toDegrees(Math.atan(x/ y)) * (pos.getX(DistanceUnit.INCH) < x ? -1 : 1) ;
         turnToAngle(angle);
         return angle;
     }
@@ -198,7 +153,31 @@ public class Robot {
         intakeSpeed = (intakeSpeed == 1 ? 0 : 1);
         intake.setPower(intakeSpeed);
     }
-
+    public void setPosition(Pose2D position){
+        odo.setPosition(position);
+    }
+    public double getHeading(AngleUnit unit){
+        return odo.getHeading(unit);
+    }
+    public double getHeading(){
+        return getHeading(AngleUnit.DEGREES);
+    }
+    public Pose2D getPos(DistanceUnit unit, AngleUnit angle){
+        return new Pose2D(unit,odo.getPosX(unit),odo.getPosY(unit),angle,odo.getHeading(angle));
+    }
+    public Pose2D getPos(){
+        return getPos(DistanceUnit.INCH,AngleUnit.DEGREES);
+    }
+    public void stop(){
+        frontRight.setPower(0);
+        frontLeft.setPower(0);
+        backLeft.setPower(0);
+        backRight.setPower(0);
+        shooter.setPower(0);
+        intake.setPower(0);
+        turretMotor.setPower(0);
+        feeder.setPower(0);
+    }
     public void mecanumDrive(double x, double y, double rx) {
         double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1);
         double frontRightPower = (y - x - rx) / denominator;

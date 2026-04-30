@@ -18,7 +18,6 @@ import org.firstinspires.ftc.teamcode.hardware.Robot.TEAMCOLOR;
 
 public class TeleDrive extends LinearOpMode {
     Robot robot;
-    private double intakeSpeed = 0;
     double angle = 0;
     private TEAMCOLOR teamColor = TEAMCOLOR.RED;
 
@@ -31,13 +30,13 @@ public class TeleDrive extends LinearOpMode {
         robot.configureMotorsZeroPower(DcMotor.ZeroPowerBehavior.BRAKE);
         waitForStart();
         gamepad1.runLedEffect(GP.RedLights);
-        robot.aiming = true;
-        robot.odo.setPosition(new Pose2D(DistanceUnit.INCH,89,25,AngleUnit.DEGREES,0));
+        robot.aiming = false;
+        robot.setPosition(new Pose2D(DistanceUnit.INCH,89,25,AngleUnit.DEGREES,0));
         while (opModeIsActive()) {
             double x = gamepad1.left_stick_x;
             double y = - gamepad1.left_stick_y;
             double rx = gamepad1.right_stick_x;
-            double heading = robot.odo.getHeading(AngleUnit.DEGREES);
+            double heading = robot.getHeading();
 
             if (gamepad1.squareWasPressed() || gamepad2.squareWasPressed()) {
                 robot.toggleIntake();
@@ -49,12 +48,16 @@ public class TeleDrive extends LinearOpMode {
                 gamepad2.runLedEffect(teamColor == TEAMCOLOR.RED ? GP.RedLights : GP.BlueLights);
             }
 
+            if (gamepad1.dpadRightWasPressed()){
+                robot.toggleShootingDistance();
+            }
+
             if(gamepad2.circleWasPressed()){
                 robot.toggleShootingDistance();
             }
 
-            if (gamepad2.rightBumperWasPressed()) {
-                robot.shoot();
+            if (gamepad2.rightBumperWasPressed()|| gamepad1.rightBumperWasPressed()) {
+                robot.shoot(); 
             }
 
             if (gamepad2.leftBumperWasPressed()) {
@@ -63,7 +66,7 @@ public class TeleDrive extends LinearOpMode {
             }
 
             if (gamepad2.dpadDownWasPressed()) {
-                robot.odo.setPosition(teamColor == TEAMCOLOR.RED ? Robot.RedCorner : Robot.BlueCorner);
+                robot.setPosition(teamColor == TEAMCOLOR.RED ? Robot.RedCorner : Robot.BlueCorner);
             }
 
             if(gamepad2.dpadLeftWasPressed()){
@@ -90,10 +93,12 @@ public class TeleDrive extends LinearOpMode {
             robot.update(teamColor);
             telemetryM.addData("RPM", robot.RPM);
             telemetryM.addData("Team Color", (teamColor == TEAMCOLOR.RED) ? ("Red") : ("Blue"));
-            telemetryM.addData("heading", robot.odo.getHeading(AngleUnit.DEGREES));
+            telemetryM.addData("heading", robot.getHeading());
             telemetryM.addData("turret rotation", robot.getTurretRotation());
             telemetryM.addData("angle",robot.angle);
             telemetryM.addData("Shooing",robot.shooting);
+            telemetryM.addData("targetRpm",robot.targetRPM);
+            telemetryM.addData("x",robot.getPos());
             telemetryM.update(telemetry);
         }
     }
