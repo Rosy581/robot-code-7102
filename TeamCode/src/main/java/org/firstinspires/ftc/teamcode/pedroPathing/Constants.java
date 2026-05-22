@@ -11,18 +11,17 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.hardware.Config;
-import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.configurables.Config;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(15.0);
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(Robot.odoOffset.y)
-            .strafePodX(Robot.odoOffset.x)
+            .forwardPodY(0.0)
+            .strafePodX(-6.5)
             .distanceUnit(DistanceUnit.INCH)
-            .hardwareMapName(Config.partNames.Odometry)
+            .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
