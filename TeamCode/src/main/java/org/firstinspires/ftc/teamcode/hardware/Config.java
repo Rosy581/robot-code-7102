@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.bylazar.configurables.annotations.Configurable;
-import org.firstinspires.ftc.teamcode.hardware.RobotBase.DIRECTION;
+import org.firstinspires.ftc.teamcode.hardware.Robot.DIRECTION;
 
 
 public class Config {
