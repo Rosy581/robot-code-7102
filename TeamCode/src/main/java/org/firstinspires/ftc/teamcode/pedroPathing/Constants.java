@@ -12,15 +12,15 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.Config;
-import org.firstinspires.ftc.teamcode.hardware.RobotBase;
+import org.firstinspires.ftc.teamcode.hardware.Robot;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(15.0);
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(RobotBase.odoOffset.y)
-            .strafePodX(RobotBase.odoOffset.x)
+            .forwardPodY(Robot.odoOffset.y)
+            .strafePodX(Robot.odoOffset.x)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName(Config.partNames.Odometry)
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
